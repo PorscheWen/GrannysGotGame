@@ -58,6 +58,8 @@ body.font-xlarge {
 html {
   font-size: var(--font-size-base);
   scroll-behavior: smooth;
+  height: 100%;
+  height: 100dvh;
 }
 
 body {
@@ -65,11 +67,10 @@ body {
                "PingFang TC", "Noto Sans TC", sans-serif;
   background: var(--bg);
   color: var(--text-primary);
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden;
   line-height: 1.5;
 }
 
@@ -165,16 +166,18 @@ button {
   color: var(--primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 /* ===== 遊戲主區域 ===== */
 .game-main {
   flex: 1;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
   padding: 16px 12px;
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* ===== 遊戲棋盤 ===== */
@@ -183,30 +186,33 @@ button {
   gap: 10px;
   width: 100%;
   max-width: 500px;
+  height: 100%;
 }
 
-/* 初級: 3列4行 */
+/* 初級: 3欄4行 */
 .game-board.easy {
   grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
 }
 
-/* 中級: 4列4行 */
+/* 中級: 4欄4行 */
 .game-board.medium {
   grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
 }
 
-/* 高級: 4列5行 */
+/* 高級: 6欄4行 */
 .game-board.hard {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 1fr);
 }
 
 /* ===== 卡片 ===== */
 .card {
-  aspect-ratio: 1;
   perspective: 600px;
   cursor: pointer;
   border-radius: var(--radius);
-  min-height: 72px;
+  min-height: 0;
 }
 
 .card-inner {
@@ -764,6 +770,7 @@ button {
 
   .game-board.easy {
     grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
   }
 }
 
