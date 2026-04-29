@@ -54,6 +54,10 @@ const DOM = {
   btnChangeDiff: $('btnChangeDiff'),
   bestScores: $('bestScores'),
   btnClearScores: $('btnClearScores'),
+  btnHelp: $('btnHelp'),
+  helpOverlay: $('helpOverlay'),
+  btnCloseHelp: $('btnCloseHelp'),
+  btnHelpStart: $('btnHelpStart'),
 };
 
 // ===== 工具函數 =====
@@ -292,6 +296,29 @@ function setFontSize(size) {
 }
 
 // ===== 事件綁定 =====
+// ===== 說明面板 =====
+function openHelp() {
+  DOM.helpOverlay.classList.add('open');
+  DOM.btnCloseHelp.focus();
+}
+
+function closeHelp() {
+  DOM.helpOverlay.classList.remove('open');
+  DOM.btnHelp.focus();
+}
+
+DOM.btnHelp.addEventListener('click', openHelp);
+DOM.btnCloseHelp.addEventListener('click', closeHelp);
+DOM.helpOverlay.addEventListener('click', e => {
+  if (e.target === DOM.helpOverlay) closeHelp();
+});
+DOM.helpOverlay.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHelp();
+});
+DOM.btnHelpStart.addEventListener('click', () => {
+  closeHelp();
+});
+
 DOM.btnSettings.addEventListener('click', openSettings);
 DOM.btnCloseSettings.addEventListener('click', closeSettings);
 

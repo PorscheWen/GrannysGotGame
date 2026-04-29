@@ -877,6 +877,184 @@ button {
   }
 }
 
+/* ===== 頁首按鈕群組 ===== */
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== 說明彈窗 ===== */
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 250;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.help-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.help-panel {
+  background: white;
+  width: 100%;
+  max-height: 88vh;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px 32px;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.help-overlay.open .help-panel {
+  transform: translateY(0);
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.help-header h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.help-header .btn-icon {
+  background: #F0F0F8;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* 步驟列表 */
+.help-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.help-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #F8F8FC;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.step-num {
+  min-width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #7B8EF0);
+  color: white;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.step-desc {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 小提示 */
+.help-tips {
+  background: #FFF8E6;
+  border-left: 4px solid var(--warning);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.help-tips h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.help-tips ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help-tips li {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding-left: 20px;
+  position: relative;
+}
+
+.help-tips li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--warning);
+  font-weight: 700;
+}
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+  .help-panel {
+    background: #1E1E3A;
+    color: #F0F0FF;
+  }
+
+  .help-step {
+    background: #12122A;
+  }
+
+  .step-title {
+    color: #F0F0FF;
+  }
+
+  .step-desc {
+    color: #9999BB;
+  }
+
+  .help-tips {
+    background: #2A2000;
+    border-color: var(--warning);
+  }
+
+  .help-tips h3 {
+    color: #F0F0FF;
+  }
+
+  .help-tips li {
+    color: #CCAA55;
+  }
+}
+
 /* ===== 工具類別 ===== */
 .visually-hidden {
   position: absolute;

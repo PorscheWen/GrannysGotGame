@@ -19,7 +19,10 @@
   <!-- 頂部標題列 -->
   <header class="app-header">
     <h1 class="app-title">🧠 記憶訓練</h1>
-    <button class="btn-icon" id="btnSettings" aria-label="設定">⚙️</button>
+    <div class="header-actions">
+      <button class="btn-icon" id="btnHelp" aria-label="遊戲說明">❓</button>
+      <button class="btn-icon" id="btnSettings" aria-label="設定">⚙️</button>
+    </div>
   </header>
 
   <!-- 遊戲統計列 -->
@@ -161,6 +164,65 @@
         <button class="btn btn-play-again" id="btnPlayAgain">🔁 再玩一次</button>
         <button class="btn btn-change-diff" id="btnChangeDiff">⚙️ 更換設定</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 遊戲說明彈窗 -->
+  <div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-label="遊戲說明">
+    <div class="help-panel">
+      <div class="help-header">
+        <h2>❓ 遊戲說明</h2>
+        <button class="btn-icon" id="btnCloseHelp" aria-label="關閉說明">✕</button>
+      </div>
+
+      <div class="help-steps">
+        <div class="help-step">
+          <span class="step-num">1</span>
+          <div class="step-content">
+            <p class="step-title">點擊任一張牌</p>
+            <p class="step-desc">牌面朝下，點擊後會翻開，露出圖案。</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <span class="step-num">2</span>
+          <div class="step-content">
+            <p class="step-title">再點一張牌</p>
+            <p class="step-desc">試著找到和第一張相同的圖案。</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <span class="step-num">3</span>
+          <div class="step-content">
+            <p class="step-title">配對成功 ✅</p>
+            <p class="step-desc">兩張圖案相同，卡片變綠色，留在桌面上。</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <span class="step-num">4</span>
+          <div class="step-content">
+            <p class="step-title">配對失敗 ❌</p>
+            <p class="step-desc">圖案不同，兩張牌會翻回背面，請記住位置再試。</p>
+          </div>
+        </div>
+        <div class="help-step">
+          <span class="step-num">5</span>
+          <div class="step-content">
+            <p class="step-title">全部配對完成 🎉</p>
+            <p class="step-desc">找出所有對子即獲勝！翻牌次數越少、時間越短越好。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-tips">
+        <h3>💡 小提示</h3>
+        <ul>
+          <li>先記住翻開過的牌的位置</li>
+          <li>翻牌次數少 = 記憶力強</li>
+          <li>可在設定中調整難度與字體大小</li>
+        </ul>
+      </div>
+
+      <button class="btn btn-start-game" id="btnHelpStart">我知道了，開始遊戲！</button>
     </div>
   </div>
 
