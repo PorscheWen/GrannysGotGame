@@ -28,6 +28,7 @@ let state = {
   seconds: 0,
   isLocked: false,
   isRunning: false,
+  timerStarted: false,
   difficulty: 'easy',
   theme: 'fruits',
   fontSize: 'large',
@@ -189,6 +190,12 @@ function onCardClick(card) {
   if (card.classList.contains('matched')) return;
   if (!state.isRunning) return;
 
+  // 第一張牌點下才開始計時
+  if (!state.timerStarted) {
+    state.timerStarted = true;
+    startTimer();
+  }
+
   // 翻開卡片
   card.classList.add('flipped');
   card.setAttribute('aria-label', `${card.dataset.emoji}（已翻開）`);
@@ -259,6 +266,8 @@ function startGame(difficulty, theme) {
   state.flips = 0;
   state.isLocked = false;
   state.isRunning = true;
+  state.timerStarted = false;
+  state.seconds = 0;
   state.totalPairs = DIFFICULTY_CONFIG[difficulty].pairs;
 
   const emojis = buildCards(difficulty, theme);
@@ -266,7 +275,7 @@ function startGame(difficulty, theme) {
 
   renderBoard(emojis, difficulty);
   updateStats();
-  startTimer();
+  DOM.timer.textContent = '00:00';
   DOM.winOverlay.classList.remove('open');
 }
 
