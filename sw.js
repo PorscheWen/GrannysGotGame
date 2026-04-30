@@ -1,11 +1,12 @@
 'use strict';
 
-const CACHE_NAME = 'memory-game-v1';
+const CACHE_NAME = 'memory-game-v4';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './config.js',
   './manifest.json',
   './icons/icon.svg',
   './icons/icon-192.png',
