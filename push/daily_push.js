@@ -5,7 +5,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') }
 const ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const USER_ID      = process.env.LINE_USER_ID;
 const LIFF_ID      = process.env.LIFF_ID;
-const GAME_URL     = process.env.GAME_URL || 'https://porschewenn.github.io/GrannysGotGame/';
+const GAME_URL     = process.env.GAME_URL || 'https://porschewen.github.io/GrannysGotGame/';
 
 if (!ACCESS_TOKEN || !USER_ID) {
   console.error('[push] 缺少 LINE_CHANNEL_ACCESS_TOKEN 或 LINE_USER_ID');
