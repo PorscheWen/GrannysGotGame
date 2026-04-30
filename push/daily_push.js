@@ -48,11 +48,15 @@ const messages = [
         ],
       },
       footer: {
-        type: 'box', layout: 'vertical', paddingAll: '16px',
+        type: 'box', layout: 'vertical', paddingAll: '16px', spacing: 'sm',
         contents: [
           {
             type: 'button', style: 'primary', color: '#5B6EE8',
             action: { type: 'uri', label: '🎮 開始遊戲', uri: gameUrl },
+          },
+          {
+            type: 'button', style: 'secondary',
+            action: { type: 'uri', label: '👥 你也來挑戰', uri: GAME_URL },
           },
         ],
       },
