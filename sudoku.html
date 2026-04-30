@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🔢 簡易數獨</title>
+  <style>
+    :root {
+      --primary: #5B6EE8;
+      --bg: #F4F6FF;
+      --radius: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; user-select: none; overflow: hidden; }
+
+    /* Header */
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; height: 64px; z-index: 100;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 14px;
+      box-shadow: 0 2px 12px rgba(91,110,232,0.3);
+    }
+    .btn-back {
+      background: rgba(255,255,255,0.2); border: none; border-radius: 10px;
+      color: #fff; font-size: 1rem; padding: 8px 14px; cursor: pointer;
+    }
+    .app-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
+    .header-info { background: rgba(255,255,255,0.2); border-radius: 10px; color: #fff; font-size: 0.9rem; padding: 6px 12px; }
+
+    /* Main area */
+    .main-area {
+      position: fixed; top: 64px; left: 0; right: 0; bottom: 80px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; padding: 12px;
+      overflow: hidden;
+    }
+
+    /* Progress */
+    .progress-bar {
+      width: 100%; max-width: 380px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.95rem; color: #555577; font-weight: 600;
+    }
+    .progress-fill {
+      height: 8px; background: #dde0f5; border-radius: 99px; flex: 1; margin: 0 12px;
+    }
+    .progress-inner {
+      height: 100%; background: var(--primary); border-radius: 99px;
+      transition: width 0.3s;
+    }
+
+    /* Grid */
+    .grid-wrap {
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sudoku-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      border: 3px solid #3a4fcc;
+      border-radius: 10px;
+      overflow: hidden;
+      gap: 0;
+      width: min(calc(100vw - 24px), 380px);
+    }
+    .cell {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(1.3rem, 6vw, 1.8rem);
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #c8cef5;
+      background: #fff;
+      position: relative;
+      transition: background 0.12s;
+    }
+    /* thick box borders */
+    .cell[data-c="2"] { border-right: 2.5px solid #3a4fcc; }
+    .cell[data-r="1"] { border-bottom: 2.5px solid #3a4fcc; }
+    .cell[data-r="3"] { border-bottom: 2.5px solid #3a4fcc; }
+
+    .cell.given { background: #eef0fd; color: #2230a0; cursor: default; }
+    .cell.selected { background: #c8d0fc !important; }
+    .cell.highlight { background: #e8ebff; }
+    .cell.conflict { color: #e74c3c !important; }
+    .cell.user { color: var(--primary); }
+
+    /* Numpad */
+    .numpad {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      width: min(calc(100vw - 24px), 380px);
+    }
+    .num-btn {
+      width: 52px; height: 52px; border-radius: 12px;
+      border: 2px solid #c8cef5; background: #fff;
+      font-size: 1.4rem; font-weight: 700; color: var(--primary);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 6px rgba(91,110,232,0.1);
+      transition: background 0.1s, transform 0.1s;
+    }
+    .num-btn:active { background: #e8ebff; transform: scale(0.92); }
+    .num-btn.del { color: #e74c3c; border-color: #f5c8c8; font-size: 1.1rem; }
+
+    /* Control bar */
+    .control-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 80px;
+      background: #fff; box-shadow: 0 -2px 12px rgba(91,110,232,0.1);
+      display: flex; align-items: center; justify-content: center; padding: 0 20px;
+    }
+    .btn-next {
+      flex: 1; max-width: 300px; background: var(--primary); color: #fff;
+      border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700;
+      padding: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(91,110,232,0.3);
+    }
+    .btn-next:active { transform: scale(0.96); }
+
+    /* Win overlay */
+    .win-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; z-index: 300;
+    }
+    .win-overlay.show { display: flex; }
+    .win-panel {
+      background: #fff; border-radius: 24px; padding: 36px 28px;
+      width: min(340px, calc(100vw - 32px)); text-align: center;
+    }
+    .win-emoji { font-size: 4rem; margin-bottom: 12px; }
+    .win-title { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+    .win-sub { font-size: 1rem; color: #666; margin-bottom: 24px; }
+    .btn-win {
+      width: 100%; background: var(--primary); color: #fff;
+      border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
+      padding: 14px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <button class="btn-back" onclick="location.href='games.html'">← 返回</button>
+  <h1 class="app-title">🔢 簡易數獨</h1>
+  <div class="header-info" id="levelInfo">第 1 題</div>
+</header>
+
+<div class="main-area">
+  <div class="progress-bar">
+    <span id="progressText">已填 0</span>
+    <div class="progress-fill"><div class="progress-inner" id="progressInner" style="width:0%"></div></div>
+    <span id="totalText">共 0 格</span>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="sudoku-grid" id="grid"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+</div>
+
+<div class="control-bar">
+  <button class="btn-next" id="btnNext">🔁 換一題</button>
+</div>
+
+<div class="win-overlay" id="winOverlay">
+  <div class="win-panel">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title">答對了！</div>
+    <div class="win-sub" id="winSub">恭喜完成數獨！</div>
+    <button class="btn-win" id="btnWinNext">下一題 →</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const PUZZLES = [
+  {
+    label: '第 1 題',
+    solution: [[1,2,3,4,5,6],[4,5,6,1,2,3],[2,3,1,5,6,4],[5,6,4,2,3,1],[3,4,2,6,1,5],[6,1,5,3,4,2]],
+    givens:   [[1,2,0,4,0,0],[4,0,6,0,2,0],[2,0,1,5,0,4],[5,6,0,0,3,1],[0,4,2,0,0,5],[0,1,5,3,0,2]]
+  },
+  {
+    label: '第 2 題',
+    solution: [[2,1,4,3,6,5],[3,6,5,2,1,4],[1,4,3,6,5,2],[6,5,2,1,4,3],[4,3,6,5,2,1],[5,2,1,4,3,6]],
+    givens:   [[2,0,4,0,6,0],[0,6,0,2,0,4],[1,4,0,6,5,0],[0,5,2,0,4,3],[4,0,6,0,0,1],[5,0,0,4,3,0]]
+  },
+  {
+    label: '第 3 題',
+    solution: [[3,4,2,1,6,5],[1,6,5,3,4,2],[4,2,6,5,1,3],[5,1,3,4,2,6],[2,5,1,6,3,4],[6,3,4,2,5,1]],
+    givens:   [[3,0,0,1,0,5],[0,6,0,0,4,0],[4,0,6,5,0,3],[0,1,0,0,2,6],[2,0,0,6,0,4],[0,0,4,0,5,1]]
+  },
+  {
+    label: '第 4 題',
+    solution: [[5,3,1,2,4,6],[2,4,6,5,3,1],[4,6,3,1,2,5],[1,2,5,4,6,3],[3,5,4,6,1,2],[6,1,2,3,5,4]],
+    givens:   [[5,0,0,2,4,0],[0,4,6,0,0,1],[4,6,0,1,0,0],[0,0,5,4,6,0],[3,0,0,0,1,2],[0,1,2,0,0,4]]
+  },
+  {
+    label: '第 5 題',
+    solution: [[6,1,4,5,2,3],[5,2,3,6,1,4],[1,4,6,3,5,2],[3,5,2,1,4,6],[4,6,1,2,3,5],[2,3,5,4,6,1]],
+    givens:   [[6,0,0,5,0,3],[0,2,0,0,1,0],[1,0,6,3,0,0],[0,5,0,0,4,6],[0,0,1,2,0,0],[2,3,0,0,0,1]]
+  }
+];
+
+let currentIdx = 0;
+let board = [];       // user's current board (0 = blank)
+let isGiven = [];     // true = pre-filled, cannot edit
+let selected = null;  // {r, c}
+let totalBlanks = 0;
+
+const gridEl    = document.getElementById('grid');
+const numpadEl  = document.getElementById('numpad');
+const levelInfo = document.getElementById('levelInfo');
+const winOverlay= document.getElementById('winOverlay');
+
+function loadPuzzle(idx) {
+  const p = PUZZLES[idx];
+  levelInfo.textContent = p.label;
+  selected = null;
+  board = p.givens.map(row => [...row]);
+  isGiven = p.givens.map(row => row.map(v => v !== 0));
+  totalBlanks = board.flat().filter(v => v === 0).length;
+  renderGrid();
+  renderNumpad();
+  updateProgress();
+  winOverlay.classList.remove('show');
+}
+
+function getBox(r, c) { return Math.floor(r / 2) * 2 + Math.floor(c / 3); }
+
+function hasConflict(r, c, val) {
+  if (val === 0) return false;
+  for (let i = 0; i < 6; i++) {
+    if (i !== c && board[r][i] === val) return true;
+    if (i !== r && board[i][c] === val) return true;
+  }
+  const br = Math.floor(r / 2) * 2, bc = Math.floor(c / 3) * 3;
+  for (let dr = 0; dr < 2; dr++)
+    for (let dc = 0; dc < 3; dc++)
+      if ((br+dr !== r || bc+dc !== c) && board[br+dr][bc+dc] === val) return true;
+  return false;
+}
+
+function renderGrid() {
+  gridEl.innerHTML = '';
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 6; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+
+      const v = board[r][c];
+      cell.textContent = v || '';
+
+      if (isGiven[r][c]) {
+        cell.classList.add('given');
+      } else if (v && hasConflict(r, c, v)) {
+        cell.classList.add('user', 'conflict');
+      } else if (v) {
+        cell.classList.add('user');
+      }
+
+      if (selected) {
+        if (selected.r === r && selected.c === c) {
+          cell.classList.add('selected');
+        } else if (selected.r === r || selected.c === c ||
+                   getBox(selected.r, selected.c) === getBox(r, c)) {
+          cell.classList.add('highlight');
+        }
+      }
+
+      cell.addEventListener('click', () => onCellClick(r, c));
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+function renderNumpad() {
+  numpadEl.innerHTML = '';
+  for (let n = 1; n <= 6; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn';
+    btn.textContent = n;
+    btn.addEventListener('click', () => onNumClick(n));
+    numpadEl.appendChild(btn);
+  }
+  const del = document.createElement('button');
+  del.className = 'num-btn del';
+  del.textContent = '⌫ 刪除';
+  del.style.width = '116px';
+  del.addEventListener('click', () => onNumClick(0));
+  numpadEl.appendChild(del);
+}
+
+function onCellClick(r, c) {
+  if (isGiven[r][c]) { selected = null; renderGrid(); return; }
+  selected = { r, c };
+  renderGrid();
+}
+
+function onNumClick(n) {
+  if (!selected) return;
+  const { r, c } = selected;
+  if (isGiven[r][c]) return;
+  board[r][c] = n;
+  renderGrid();
+  updateProgress();
+  checkWin();
+}
+
+function updateProgress() {
+  const filled = board.flat().filter((v, i) => v !== 0 && !isGiven[Math.floor(i/6)][i%6]).length;
+  const pct = totalBlanks > 0 ? (filled / totalBlanks * 100) : 0;
+  document.getElementById('progressText').textContent = `已填 ${filled}`;
+  document.getElementById('totalText').textContent = `共 ${totalBlanks} 格`;
+  document.getElementById('progressInner').style.width = pct + '%';
+}
+
+function checkWin() {
+  const sol = PUZZLES[currentIdx].solution;
+  for (let r = 0; r < 6; r++)
+    for (let c = 0; c < 6; c++)
+      if (board[r][c] !== sol[r][c]) return;
+  // All correct
+  setTimeout(() => {
+    document.getElementById('winSub').textContent =
+      `第 ${currentIdx + 1} 題完成！太厲害了 👏`;
+    winOverlay.classList.add('show');
+  }, 300);
+}
+
+function nextPuzzle() {
+  currentIdx = (currentIdx + 1) % PUZZLES.length;
+  loadPuzzle(currentIdx);
+}
+
+document.getElementById('btnNext').addEventListener('click', nextPuzzle);
+document.getElementById('btnWinNext').addEventListener('click', () => {
+  winOverlay.classList.remove('show');
+  nextPuzzle();
+});
+
+loadPuzzle(0);
+</script>
+</body>
+</html>

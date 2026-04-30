@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#5B6EE8">
+  <title>👵 連阿嬤都贏你 - 遊戲大廳</title>
+  <style>
+    :root { --primary:#5B6EE8; --bg:#F4F6FF; }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    html,body { min-height:100%; background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+
+    .app-header {
+      background:var(--primary); padding:20px 16px 16px;
+      box-shadow:0 2px 12px rgba(91,110,232,.3); text-align:center;
+    }
+    .app-title { color:#fff; font-size:1.3rem; font-weight:900; }
+    .app-sub { color:rgba(255,255,255,.75); font-size:.85rem; margin-top:4px; }
+
+    .content { padding:20px 16px 32px; max-width:480px; margin:0 auto; }
+
+    .section-title {
+      font-size:.85rem; font-weight:700; color:#8896AB;
+      letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; margin-top:4px;
+    }
+
+    .games-grid { display:flex; flex-direction:column; gap:12px; margin-bottom:28px; }
+
+    .game-card {
+      background:#fff; border-radius:16px;
+      box-shadow:0 3px 12px rgba(91,110,232,.1);
+      display:flex; align-items:center; gap:16px;
+      padding:18px 16px; cursor:pointer; text-decoration:none;
+      transition:transform .12s, box-shadow .12s;
+    }
+    .game-card:active { transform:scale(.97); box-shadow:0 1px 6px rgba(91,110,232,.12); }
+
+    .game-icon {
+      width:60px; height:60px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.9rem; flex-shrink:0;
+    }
+    .icon-blue   { background:#EEF0FD; }
+    .icon-green  { background:#D5F0E1; }
+    .icon-orange { background:#FDE8D5; }
+    .icon-purple { background:#EDE5FB; }
+    .icon-teal   { background:#D5F0EF; }
+
+    .game-info { flex:1; min-width:0; }
+    .game-name { font-size:1.15rem; font-weight:800; color:#1A1A2E; margin-bottom:4px; }
+    .game-desc { font-size:.85rem; color:#8896AB; line-height:1.4; }
+    .game-badge {
+      background:var(--primary); color:#fff;
+      font-size:.7rem; font-weight:700; border-radius:6px;
+      padding:3px 8px; white-space:nowrap;
+    }
+    .game-badge.green  { background:#27AE60; }
+    .game-badge.new    { background:#E74C3C; }
+
+    .footer { text-align:center; color:#aaa; font-size:.8rem; padding:8px; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="app-title">👵 連阿嬤都贏你</div>
+    <div class="app-sub">Granny's Got Game｜選一個遊戲開始挑戰！</div>
+  </header>
+
+  <div class="content">
+    <div class="section-title">記憶 & 配對</div>
+    <div class="games-grid">
+      <a class="game-card" href="index.html">
+        <div class="game-icon icon-blue">🧠</div>
+        <div class="game-info">
+          <div class="game-name">翻牌記憶挑戰</div>
+          <div class="game-desc">翻開卡片找出相同圖案，訓練記憶力</div>
+        </div>
+        <span class="game-badge">經典</span>
+      </a>
+      <a class="game-card" href="fruit.html">
+        <div class="game-icon icon-green">🍎</div>
+        <div class="game-info">
+          <div class="game-name">水果消消樂</div>
+          <div class="game-desc">點選相鄰水果交換，湊 3 顆消除得分</div>
+        </div>
+        <span class="game-badge green">連鎖</span>
+      </a>
+    </div>
+
+    <div class="section-title">動腦 & 邏輯</div>
+    <div class="games-grid">
+      <a class="game-card" href="2048.html">
+        <div class="game-icon icon-orange">🔢</div>
+        <div class="game-info">
+          <div class="game-name">數字拼圖 2048</div>
+          <div class="game-desc">滑動合併相同數字，挑戰 2048！</div>
+        </div>
+        <span class="game-badge new">新</span>
+      </a>
+      <a class="game-card" href="sudoku.html">
+        <div class="game-icon icon-teal">🔢</div>
+        <div class="game-info">
+          <div class="game-name">簡易數獨</div>
+          <div class="game-desc">6×6 格，填入 1–6，每行每列不重複</div>
+        </div>
+        <span class="game-badge new">新</span>
+      </a>
+    </div>
+
+    <div class="section-title">語文 & 知識</div>
+    <div class="games-grid">
+      <a class="game-card" href="wordchain.html">
+        <div class="game-icon icon-purple">💬</div>
+        <div class="game-info">
+          <div class="game-name">文字接龍</div>
+          <div class="game-desc">詞語末字接下一個詞語開頭，越接越長</div>
+        </div>
+        <span class="game-badge new">新</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">連阿嬤都贏你 │ Granny's Got Game</div>
+
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#5B6EE8">
+  <title>💬 文字接龍</title>
+  <style>
+    :root { --primary:#5B6EE8; --bg:#F4F6FF; }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    html,body { height:100%; background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; user-select:none; overflow:hidden; }
+
+    .app-header {
+      position:fixed; top:0; left:0; right:0; height:64px; z-index:100;
+      background:var(--primary); display:flex; align-items:center; justify-content:space-between; padding:0 16px;
+      box-shadow:0 2px 12px rgba(91,110,232,.3);
+    }
+    .btn-back { background:rgba(255,255,255,.2); border:none; border-radius:10px; color:#fff; font-size:1rem; padding:8px 14px; cursor:pointer; }
+    .app-title { color:#fff; font-size:1.1rem; font-weight:700; }
+    .score-box { background:rgba(255,255,255,.2); border-radius:10px; color:#fff; font-size:1rem; font-weight:700; padding:6px 14px; min-width:56px; text-align:center; }
+
+    .content {
+      position:fixed; top:64px; left:0; right:0; bottom:80px;
+      display:flex; flex-direction:column; align-items:center; padding:16px;
+      overflow-y:auto; gap:14px;
+    }
+
+    /* 當前關鍵字 */
+    .key-char-wrap {
+      background:#fff; border-radius:20px; width:100%; max-width:440px;
+      padding:18px 20px; box-shadow:0 4px 16px rgba(91,110,232,.12);
+      text-align:center;
+    }
+    .key-label { font-size:.9rem; color:#888; margin-bottom:8px; }
+    .key-char { font-size:3.5rem; font-weight:900; color:var(--primary); line-height:1; }
+    .key-hint { font-size:.85rem; color:#aaa; margin-top:8px; }
+
+    /* 輸入區 */
+    .input-wrap {
+      width:100%; max-width:440px; display:flex; gap:10px;
+    }
+    .word-input {
+      flex:1; border:2px solid #d0d8ff; border-radius:14px;
+      font-size:1.5rem; padding:14px 16px; outline:none; background:#fff;
+      color:#333; min-width:0;
+    }
+    .word-input:focus { border-color:var(--primary); }
+    .btn-submit {
+      background:var(--primary); color:#fff; border:none; border-radius:14px;
+      font-size:1.1rem; font-weight:700; padding:14px 20px; cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn-submit:active { transform:scale(.95); }
+
+    /* 錯誤提示 */
+    .error-msg {
+      font-size:1rem; color:#e74c3c; font-weight:600; min-height:1.4rem; text-align:center;
+    }
+
+    /* 接龍歷史 */
+    .chain-list {
+      width:100%; max-width:440px; display:flex; flex-direction:column; gap:8px;
+    }
+    .chain-item {
+      background:#fff; border-radius:12px; padding:12px 16px;
+      box-shadow:0 2px 8px rgba(91,110,232,.08);
+      display:flex; align-items:center; gap:10px;
+    }
+    .chain-num { color:#aaa; font-size:.85rem; min-width:24px; }
+    .chain-word { font-size:1.3rem; font-weight:700; color:#333; }
+    .chain-arrow { color:#aaa; font-size:1rem; }
+    .chain-char { font-size:1.3rem; font-weight:900; color:var(--primary); }
+
+    /* 底部 */
+    .control-bar {
+      position:fixed; bottom:0; left:0; right:0; height:80px;
+      background:#fff; box-shadow:0 -2px 12px rgba(0,0,0,.08);
+      display:flex; align-items:center; justify-content:center; padding:0 16px; gap:10px;
+    }
+    .btn-end {
+      background:#fff; color:var(--primary);
+      border:2px solid var(--primary); border-radius:12px;
+      font-size:1rem; font-weight:700; padding:14px 16px;
+      cursor:pointer; white-space:nowrap;
+    }
+    .btn-end:active { transform:scale(.96); }
+    .btn-restart {
+      flex:1; max-width:260px; background:var(--primary); color:#fff;
+      border:none; border-radius:12px; font-size:1.05rem; font-weight:700; padding:14px;
+      cursor:pointer; box-shadow:0 4px 14px rgba(91,110,232,.3);
+    }
+    .btn-restart:active { transform:scale(.96); }
+
+    /* 說明彈窗 */
+    .help-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:300; }
+    .help-panel { background:#fff; border-radius:20px; padding:28px 24px; width:min(360px,calc(100vw - 32px)); text-align:center; }
+    .help-panel h2 { font-size:1.4rem; margin-bottom:16px; color:var(--primary); }
+    .help-steps { text-align:left; margin-bottom:20px; }
+    .help-step { display:flex; gap:12px; margin-bottom:12px; }
+    .step-num { background:var(--primary); color:#fff; border-radius:50%; width:28px; height:28px; min-width:28px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
+    .step-text { font-size:.95rem; line-height:1.5; padding-top:4px; }
+    .btn-got-it { background:var(--primary); color:#fff; border:none; border-radius:12px; font-size:1.05rem; font-weight:700; padding:14px 32px; cursor:pointer; width:100%; }
+
+    /* 遊戲結束彈窗 */
+    .end-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:300; display:none; }
+    .end-panel { background:#fff; border-radius:20px; padding:32px 24px; width:min(340px,calc(100vw - 32px)); text-align:center; }
+    .end-emoji { font-size:3rem; margin-bottom:12px; }
+    .end-title { font-size:1.5rem; font-weight:900; color:var(--primary); margin-bottom:8px; }
+    .end-score { font-size:1.1rem; color:#555; margin-bottom:24px; }
+    .btn-play-again { background:var(--primary); color:#fff; border:none; border-radius:12px; font-size:1.05rem; font-weight:700; padding:14px 32px; cursor:pointer; width:100%; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <button class="btn-back" onclick="location.href='games.html'">← 返回</button>
+    <h1 class="app-title">💬 文字接龍</h1>
+    <div class="score-box" id="scoreBox">0</div>
+  </header>
+
+  <div class="content" id="content">
+    <div class="key-char-wrap">
+      <div class="key-label">請輸入以此字開頭的詞語</div>
+      <div class="key-char" id="keyChar">山</div>
+      <div class="key-hint">輸入任意兩字以上的詞語</div>
+    </div>
+
+    <div class="input-wrap">
+      <input class="word-input" id="wordInput" type="text" placeholder="輸入詞語…" maxlength="20" autocomplete="off" autocorrect="off">
+      <button class="btn-submit" id="btnSubmit">送出</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="chain-list" id="chainList"></div>
+  </div>
+
+  <div class="control-bar">
+    <button class="btn-end" id="btnEnd">📊 結算</button>
+    <button class="btn-restart" id="btnRestart">🔁 重新開始</button>
+  </div>
+
+  <!-- 說明彈窗 -->
+  <div class="help-overlay" id="helpOverlay">
+    <div class="help-panel">
+      <h2>💬 怎麼玩？</h2>
+      <div class="help-steps">
+        <div class="help-step">
+          <span class="step-num">1</span>
+          <p class="step-text">畫面顯示一個字，輸入以這個字「開頭」的詞語（2字以上）</p>
+        </div>
+        <div class="help-step">
+          <span class="step-num">2</span>
+          <p class="step-text">接龍！系統取你詞語的「最後一個字」繼續挑戰</p>
+        </div>
+        <div class="help-step">
+          <span class="step-num">3</span>
+          <p class="step-text">詞語不能重複，接得越長分數越高！</p>
+        </div>
+      </div>
+      <button class="btn-got-it" id="btnGotIt">我知道了，開始玩！</button>
+    </div>
+  </div>
+
+  <!-- 遊戲結束彈窗 -->
+  <div class="end-overlay" id="endOverlay">
+    <div class="end-panel">
+      <div class="end-emoji">🎉</div>
+      <div class="end-title">接龍完成！</div>
+      <div class="end-score" id="endScore">共接了 0 個詞語</div>
+      <button class="btn-play-again" id="btnPlayAgain">🔁 再玩一次</button>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // 起始字庫（確保接龍不會太快卡死）
+    const START_CHARS = ['山','水','天','地','人','心','日','月','風','花','草','樹','家','國','大','小','長','高','好','美','快','樂','笑','愛','春','夏','秋','冬'];
+
+    let currentChar = '';
+    let score = 0;
+    let usedWords = new Set();
+    let chain = [];
+
+    const keyCharEl   = document.getElementById('keyChar');
+    const wordInput   = document.getElementById('wordInput');
+    const btnSubmit   = document.getElementById('btnSubmit');
+    const errorMsg    = document.getElementById('errorMsg');
+    const chainList   = document.getElementById('chainList');
+    const scoreBox    = document.getElementById('scoreBox');
+
+    function init() {
+      score = 0;
+      usedWords.clear();
+      chain = [];
+      currentChar = START_CHARS[Math.floor(Math.random() * START_CHARS.length)];
+      keyCharEl.textContent = currentChar;
+      wordInput.value = '';
+      errorMsg.textContent = '';
+      chainList.innerHTML = '';
+      scoreBox.textContent = '0';
+    }
+
+    function submit() {
+      const word = wordInput.value.trim();
+      errorMsg.textContent = '';
+
+      if (word.length < 2) { showError('請輸入 2 個字以上的詞語'); return; }
+      if ([...word][0] !== currentChar) { showError(`詞語必須以「${currentChar}」開頭！`); return; }
+      if (usedWords.has(word)) { showError('這個詞語已經用過了！'); return; }
+
+      // 成功
+      usedWords.add(word);
+      chain.unshift({ word, from: currentChar });
+      score++;
+      scoreBox.textContent = score;
+
+      const chars = [...word];
+      currentChar = chars[chars.length - 1];
+      keyCharEl.textContent = currentChar;
+      wordInput.value = '';
+      renderChain();
+
+      // 動畫效果
+      keyCharEl.style.transform = 'scale(1.3)';
+      setTimeout(() => keyCharEl.style.transform = '', 300);
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      wordInput.style.borderColor = '#e74c3c';
+      setTimeout(() => { wordInput.style.borderColor = ''; errorMsg.textContent = ''; }, 1800);
+    }
+
+    function renderChain() {
+      chainList.innerHTML = chain.slice(0, 10).map((item, i) => `
+        <div class="chain-item">
+          <span class="chain-num">${score - i}</span>
+          <span class="chain-word">${item.word}</span>
+          <span class="chain-arrow">→</span>
+          <span class="chain-char">${[...item.word].at(-1)}</span>
+        </div>
+      `).join('');
+    }
+
+    function showEnd() {
+      document.getElementById('endScore').textContent = `共接了 ${score} 個詞語`;
+      document.getElementById('endOverlay').style.display = 'flex';
+    }
+
+    btnSubmit.addEventListener('click', submit);
+    wordInput.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+    document.getElementById('btnRestart').addEventListener('click', init);
+    document.getElementById('btnEnd').addEventListener('click', showEnd);
+    document.getElementById('btnGotIt').addEventListener('click', () => {
+      document.getElementById('helpOverlay').style.display = 'none';
+      wordInput.focus();
+    });
+    document.getElementById('btnPlayAgain').addEventListener('click', () => {
+      document.getElementById('endOverlay').style.display = 'none';
+      init();
+    });
+
+    init();
+  </script>
+</body>
+</html>
