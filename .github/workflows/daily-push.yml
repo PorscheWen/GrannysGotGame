@@ -1,0 +1,25 @@
+name: Daily LINE Push
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 台灣時間 09:00 (UTC+8)
+  workflow_dispatch:        # 手動觸發（測試用）
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install --omit=dev
+
+      - run: node push/daily_push.js
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          LIFF_ID: ${{ secrets.LIFF_ID }}
+          GAME_URL: ${{ secrets.GAME_URL }}
