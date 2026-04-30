@@ -13,8 +13,8 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>🧠 記憶訓練遊戲</title>
   <link rel="stylesheet" href="style.css">
-  <!-- LIFF SDK（在 Line 內開啟時自動啟用） -->
   <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+  <script src="config.js"></script>
 </head>
 <body>
 
@@ -163,6 +163,7 @@
         </div>
       </div>
       <div class="win-buttons">
+        <button class="btn btn-share-line" id="btnShareLine" style="display:none">📤 分享到 LINE</button>
         <button class="btn btn-play-again" id="btnPlayAgain">🔁 再玩一次</button>
         <button class="btn btn-change-diff" id="btnChangeDiff">⚙️ 更換設定</button>
       </div>

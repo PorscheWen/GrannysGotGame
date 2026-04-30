@@ -50,6 +50,7 @@ const DOM = {
   winTime: $('winTime'),
   winFlips: $('winFlips'),
   newRecordBadge: $('newRecordBadge'),
+  btnShareLine: $('btnShareLine'),
   btnPlayAgain: $('btnPlayAgain'),
   btnChangeDiff: $('btnChangeDiff'),
   bestScores: $('bestScores'),
@@ -237,6 +238,7 @@ function onGameWin() {
     DOM.winTime.textContent = formatTime(state.seconds);
     DOM.winFlips.textContent = `${state.flips} 次`;
     DOM.newRecordBadge.style.display = isNew ? 'flex' : 'none';
+    DOM.btnShareLine.style.display = state.liffReady ? 'block' : 'none';
     DOM.winOverlay.classList.add('open');
   }, 600);
 }
@@ -351,6 +353,8 @@ DOM.btnChangeDiff.addEventListener('click', () => {
   openSettings();
 });
 
+DOM.btnShareLine.addEventListener('click', shareResult);
+
 DOM.btnClearScores.addEventListener('click', () => {
   if (confirm('確定要清除所有最佳成績嗎？')) {
     localStorage.removeItem('memory_best');
@@ -370,13 +374,99 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// ===== LIFF 分享成績 =====
+function buildShareFlex(difficulty, timeStr, flips, gameUrl) {
+  const diffEmoji = { easy: '🌱', medium: '🌿', hard: '🌳' };
+  const diffName  = { easy: '初級', medium: '中級', hard: '高級' };
+  return {
+    type: 'flex',
+    altText: `我完成了記憶訓練！${diffName[difficulty]} ${timeStr} / ${flips}次翻牌`,
+    contents: {
+      type: 'bubble',
+      size: 'mega',
+      header: {
+        type: 'box', layout: 'vertical',
+        backgroundColor: '#5B6EE8', paddingAll: '20px',
+        contents: [
+          { type: 'text', text: '🧠 記憶訓練挑戰', color: '#ffffff', size: 'xl', weight: 'bold' },
+          { type: 'text', text: '我完成了！你也來試試？', color: '#ffffffcc', size: 'sm' },
+        ],
+      },
+      body: {
+        type: 'box', layout: 'vertical', paddingAll: '20px', spacing: 'md',
+        contents: [
+          {
+            type: 'box', layout: 'horizontal', spacing: 'sm',
+            contents: [
+              {
+                type: 'box', layout: 'vertical', flex: 1,
+                backgroundColor: '#f0f4ff', cornerRadius: '12px', paddingAll: '12px',
+                contents: [
+                  { type: 'text', text: '難度', size: 'xs', color: '#8896AB' },
+                  { type: 'text', text: `${diffEmoji[difficulty]} ${diffName[difficulty]}`, size: 'lg', weight: 'bold' },
+                ],
+              },
+              {
+                type: 'box', layout: 'vertical', flex: 1,
+                backgroundColor: '#f0f4ff', cornerRadius: '12px', paddingAll: '12px',
+                contents: [
+                  { type: 'text', text: '時間', size: 'xs', color: '#8896AB' },
+                  { type: 'text', text: `⏱️ ${timeStr}`, size: 'lg', weight: 'bold' },
+                ],
+              },
+              {
+                type: 'box', layout: 'vertical', flex: 1,
+                backgroundColor: '#f0f4ff', cornerRadius: '12px', paddingAll: '12px',
+                contents: [
+                  { type: 'text', text: '翻牌', size: 'xs', color: '#8896AB' },
+                  { type: 'text', text: `🔄 ${flips}次`, size: 'lg', weight: 'bold' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      footer: {
+        type: 'box', layout: 'vertical', paddingAll: '16px',
+        contents: [
+          {
+            type: 'button', style: 'primary', color: '#5B6EE8',
+            action: { type: 'uri', label: '👊 我也來挑戰！', uri: gameUrl },
+          },
+        ],
+      },
+    },
+  };
+}
+
+async function shareResult() {
+  const config = window.GAME_CONFIG || {};
+  const gameUrl = config.liffId
+    ? `https://liff.line.me/${config.liffId}`
+    : (config.gameUrl || location.href);
+
+  const flex = buildShareFlex(
+    state.difficulty,
+    DOM.winTime.textContent,
+    state.flips,
+    gameUrl,
+  );
+
+  try {
+    await liff.shareTargetPicker([flex], { isMultiple: true });
+  } catch (e) {
+    console.warn('[LIFF] 分享失敗:', e.message);
+  }
+}
+
 // ===== LIFF 初始化 =====
 async function initLiff() {
   if (typeof liff === 'undefined') return;
-  const liffId = document.querySelector('meta[name="liff-id"]')?.content;
+  const liffId = window.GAME_CONFIG?.liffId;
   if (!liffId) return;
   try {
     await liff.init({ liffId });
+    state.liffReady = true;
     console.log('[LIFF] 初始化成功，isInClient:', liff.isInClient());
   } catch (e) {
     console.warn('[LIFF] 初始化失敗:', e.message);

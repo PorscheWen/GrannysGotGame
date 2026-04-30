@@ -1,16 +1,14 @@
 {
   "name": "memory-game-elder",
-  "version": "1.0.0",
-  "description": "老人記憶訓練遊戲 PWA + Line Bot",
-  "main": "server.js",
+  "version": "2.0.0",
+  "description": "老人記憶訓練遊戲 PWA（GitHub Pages）+ LINE 每日推播",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "push": "node push/daily_push.js"
   },
   "dependencies": {
-    "@line/bot-sdk": "^11.0.0",
-    "canvas": "^3.2.3",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "dotenv": "^17.4.2"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
