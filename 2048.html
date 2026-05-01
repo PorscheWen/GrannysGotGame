@@ -97,6 +97,16 @@
       background: #5B6EE8; color: #fff; border: none; border-radius: 12px;
       font-size: 1.05rem; font-weight: 700; padding: 14px 32px; cursor: pointer; width: 100%;
     }
+    .btn-share {
+      background: #06C755; color: #fff; border: none; border-radius: 12px;
+      font-size: 1.05rem; font-weight: 700; padding: 14px 32px; cursor: pointer; width: 100%;
+      margin-top: 10px;
+    }
+    .btn-share:active { transform: scale(0.97); }
+    .best-badge {
+      display: inline-block; background: #fff3cd; color: #b8860b;
+      border-radius: 8px; padding: 4px 10px; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;
+    }
     .help-step { display: flex; gap: 12px; margin-bottom: 12px; text-align: left; }
     .sn { background:#5B6EE8; color:#fff; border-radius:50%; width:28px; height:28px; min-width:28px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
     .st { font-size:.95rem; line-height:1.5; padding-top:4px; }
@@ -138,7 +148,10 @@
     <h2 id="resultTitle">🎉 你贏了！</h2>
     <p id="resultMsg">成功合出 2048！</p>
     <div class="result-score" id="resultScore">0</div>
-    <button class="btn-ok" id="btnResultOk">再玩一次</button>
+    <div id="newBestBadge" class="best-badge" style="display:none">🏆 新紀錄！</div>
+    <p style="font-size:.9rem;color:#888;margin-bottom:12px">最高紀錄：<strong id="resultBest">0</strong></p>
+    <button class="btn-share" id="btnShare">📤 分享成績</button>
+    <button class="btn-ok" id="btnResultOk" style="margin-top:10px">再玩一次</button>
   </div>
 </div>
 
@@ -283,7 +296,19 @@ function showResult(win) {
   document.getElementById('resultTitle').textContent = win ? '🎉 你贏了！' : '😅 遊戲結束';
   document.getElementById('resultMsg').textContent   = win ? '成功合出 2048！連阿嬤都贏你！' : '無法繼續移動，再試一次！';
   document.getElementById('resultScore').textContent = score;
+  document.getElementById('resultBest').textContent  = best;
+  const isNew = score >= best && score > 0;
+  document.getElementById('newBestBadge').style.display = isNew ? 'inline-block' : 'none';
   document.getElementById('resultOverlay').classList.remove('hidden');
+}
+
+function shareResult() {
+  const txt = `🔢 數字拼圖 2048\n本次得分：${score} 分\n最高紀錄：${best} 分\n\n快來挑戰我！👉 https://porschewen.github.io/GrannysGotGame/2048.html`;
+  if (navigator.share) {
+    navigator.share({ text: txt }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(txt).then(() => alert('成績已複製到剪貼簿！'));
+  }
 }
 
 // keyboard
@@ -305,6 +330,7 @@ document.addEventListener('touchend', e=>{
 document.getElementById('btnRestart').addEventListener('click', init);
 document.getElementById('btnResultOk').addEventListener('click', ()=>{ document.getElementById('resultOverlay').classList.add('hidden'); init(); });
 document.getElementById('btnGotIt').addEventListener('click', ()=>{ document.getElementById('helpOverlay').style.display='none'; });
+document.getElementById('btnShare').addEventListener('click', shareResult);
 
 window.addEventListener('resize', ()=>render());
 init();

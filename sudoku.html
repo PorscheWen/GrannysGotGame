@@ -26,6 +26,9 @@
     }
     .app-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
     .header-info { background: rgba(255,255,255,0.2); border-radius: 10px; color: #fff; font-size: 0.9rem; padding: 6px 12px; }
+    .header-right { display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .timer-box { background:rgba(255,255,255,0.2); border-radius:10px; color:#fff; font-size:1rem; font-weight:700; padding:4px 10px; }
+    .best-time-box { color:#fff; font-size:.75rem; opacity:.85; }
 
     /* Main area */
     .main-area {
@@ -125,7 +128,15 @@
     }
     .win-emoji { font-size: 4rem; margin-bottom: 12px; }
     .win-title { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
-    .win-sub { font-size: 1rem; color: #666; margin-bottom: 24px; }
+    .win-sub { font-size: 1rem; color: #666; margin-bottom: 6px; }
+    .win-time { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .win-best { font-size: .9rem; color: #888; margin-bottom: 6px; }
+    .win-new-badge { display:inline-block; background:#fff3cd; color:#b8860b; border-radius:8px; padding:4px 10px; font-size:.85rem; font-weight:700; margin-bottom:16px; }
+    .btn-share-sudoku {
+      width: 100%; background: #06C755; color: #fff;
+      border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700;
+      padding: 14px; cursor: pointer; margin-bottom: 10px;
+    }
     .btn-win {
       width: 100%; background: var(--primary); color: #fff;
       border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
@@ -138,7 +149,10 @@
 <header class="app-header">
   <button class="btn-back" onclick="location.href='games.html'">← 返回</button>
   <h1 class="app-title">🔢 簡易數獨</h1>
-  <div class="header-info" id="levelInfo">第 1 題</div>
+  <div class="header-right">
+    <div class="timer-box" id="timerBox">⏱ 0:00</div>
+    <div class="best-time-box" id="bestTimeBox">最佳 --:--</div>
+  </div>
 </header>
 
 <div class="main-area">
@@ -164,6 +178,10 @@
     <div class="win-emoji">🎉</div>
     <div class="win-title">答對了！</div>
     <div class="win-sub" id="winSub">恭喜完成數獨！</div>
+    <div class="win-time" id="winTime">用時 0:00</div>
+    <div class="win-best" id="winBest">最佳紀錄：--:--</div>
+    <div id="winNewBadge" class="win-new-badge" style="display:none">🏆 新紀錄！</div>
+    <button class="btn-share-sudoku" id="btnShareSudoku">📤 分享成績</button>
     <button class="btn-win" id="btnWinNext">下一題 →</button>
   </div>
 </div>
@@ -200,19 +218,48 @@ const PUZZLES = [
 ];
 
 let currentIdx = 0;
-let board = [];       // user's current board (0 = blank)
-let isGiven = [];     // true = pre-filled, cannot edit
-let selected = null;  // {r, c}
+let board = [];
+let isGiven = [];
+let selected = null;
 let totalBlanks = 0;
+let timerSec = 0;
+let timerInterval = null;
 
 const gridEl    = document.getElementById('grid');
 const numpadEl  = document.getElementById('numpad');
-const levelInfo = document.getElementById('levelInfo');
 const winOverlay= document.getElementById('winOverlay');
+
+function fmtTime(s) {
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+
+function getBestKey(idx) { return `sudoku_best_${idx}`; }
+
+function getBest(idx) {
+  return parseInt(localStorage.getItem(getBestKey(idx)) || '0');
+}
+
+function updateBestDisplay(idx) {
+  const b = getBest(idx);
+  document.getElementById('bestTimeBox').textContent = b ? `最佳 ${fmtTime(b)}` : '最佳 --:--';
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerSec = 0;
+  document.getElementById('timerBox').textContent = '⏱ 0:00';
+  timerInterval = setInterval(() => {
+    timerSec++;
+    document.getElementById('timerBox').textContent = `⏱ ${fmtTime(timerSec)}`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
 
 function loadPuzzle(idx) {
   const p = PUZZLES[idx];
-  levelInfo.textContent = p.label;
   selected = null;
   board = p.givens.map(row => [...row]);
   isGiven = p.givens.map(row => row.map(v => v !== 0));
@@ -221,6 +268,8 @@ function loadPuzzle(idx) {
   renderNumpad();
   updateProgress();
   winOverlay.classList.remove('show');
+  updateBestDisplay(idx);
+  startTimer();
 }
 
 function getBox(r, c) { return Math.floor(r / 2) * 2 + Math.floor(c / 3); }
@@ -319,12 +368,33 @@ function checkWin() {
   for (let r = 0; r < 6; r++)
     for (let c = 0; c < 6; c++)
       if (board[r][c] !== sol[r][c]) return;
-  // All correct
+  stopTimer();
+  const elapsed = timerSec;
+  const key = getBestKey(currentIdx);
+  const prev = getBest(currentIdx);
+  const isNew = !prev || elapsed < prev;
+  if (isNew) {
+    localStorage.setItem(key, elapsed);
+    updateBestDisplay(currentIdx);
+  }
   setTimeout(() => {
-    document.getElementById('winSub').textContent =
-      `第 ${currentIdx + 1} 題完成！太厲害了 👏`;
+    document.getElementById('winSub').textContent = `第 ${currentIdx + 1} 題完成！太厲害了 👏`;
+    document.getElementById('winTime').textContent = `用時 ${fmtTime(elapsed)}`;
+    document.getElementById('winBest').textContent = `最佳紀錄：${fmtTime(isNew ? elapsed : prev)}`;
+    document.getElementById('winNewBadge').style.display = isNew ? 'inline-block' : 'none';
     winOverlay.classList.add('show');
   }, 300);
+}
+
+function shareSudoku() {
+  const elapsed = timerSec;
+  const best = getBest(currentIdx);
+  const txt = `🔢 簡易數獨 第${currentIdx+1}題\n完成時間：${fmtTime(elapsed)}\n最佳紀錄：${fmtTime(best)}\n\n來挑戰看看！👉 https://porschewen.github.io/GrannysGotGame/sudoku.html`;
+  if (navigator.share) {
+    navigator.share({ text: txt }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(txt).then(() => alert('成績已複製到剪貼簿！'));
+  }
 }
 
 function nextPuzzle() {
@@ -332,11 +402,12 @@ function nextPuzzle() {
   loadPuzzle(currentIdx);
 }
 
-document.getElementById('btnNext').addEventListener('click', nextPuzzle);
+document.getElementById('btnNext').addEventListener('click', () => { stopTimer(); nextPuzzle(); });
 document.getElementById('btnWinNext').addEventListener('click', () => {
   winOverlay.classList.remove('show');
   nextPuzzle();
 });
+document.getElementById('btnShareSudoku').addEventListener('click', shareSudoku);
 
 loadPuzzle(0);
 </script>

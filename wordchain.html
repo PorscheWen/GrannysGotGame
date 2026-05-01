@@ -106,8 +106,13 @@
     .end-panel { background:#fff; border-radius:20px; padding:32px 24px; width:min(340px,calc(100vw - 32px)); text-align:center; }
     .end-emoji { font-size:3rem; margin-bottom:12px; }
     .end-title { font-size:1.5rem; font-weight:900; color:var(--primary); margin-bottom:8px; }
-    .end-score { font-size:1.1rem; color:#555; margin-bottom:24px; }
+    .end-score { font-size:1.1rem; color:#555; margin-bottom:6px; }
+    .end-best  { font-size:.95rem; color:#888; margin-bottom:6px; }
+    .end-new-badge { display:inline-block; background:#fff3cd; color:#b8860b; border-radius:8px; padding:4px 10px; font-size:.85rem; font-weight:700; margin-bottom:16px; }
+    .btn-share-word { background:#06C755; color:#fff; border:none; border-radius:12px; font-size:1.05rem; font-weight:700; padding:14px 32px; cursor:pointer; width:100%; margin-bottom:10px; }
+    .btn-share-word:active { transform:scale(.95); }
     .btn-play-again { background:var(--primary); color:#fff; border:none; border-radius:12px; font-size:1.05rem; font-weight:700; padding:14px 32px; cursor:pointer; width:100%; }
+    .best-row { font-size:.85rem; color:#fff; opacity:.85; }
   </style>
 </head>
 <body>
@@ -115,7 +120,10 @@
   <header class="app-header">
     <button class="btn-back" onclick="location.href='games.html'">← 返回</button>
     <h1 class="app-title">💬 文字接龍</h1>
-    <div class="score-box" id="scoreBox">0</div>
+    <div style="text-align:center">
+      <div class="score-box" id="scoreBox">0</div>
+      <div class="best-row">最高 <span id="bestBox">0</span></div>
+    </div>
   </header>
 
   <div class="content" id="content">
@@ -168,6 +176,9 @@
       <div class="end-emoji">🎉</div>
       <div class="end-title">接龍完成！</div>
       <div class="end-score" id="endScore">共接了 0 個詞語</div>
+      <div class="end-best" id="endBest">最高紀錄：0 個</div>
+      <div id="endNewBadge" class="end-new-badge" style="display:none">🏆 新紀錄！</div>
+      <button class="btn-share-word" id="btnShareWord">📤 分享成績</button>
       <button class="btn-play-again" id="btnPlayAgain">🔁 再玩一次</button>
     </div>
   </div>
@@ -180,6 +191,7 @@
 
     let currentChar = '';
     let score = 0;
+    let best = parseInt(localStorage.getItem('wordchain_best') || '0');
     let usedWords = new Set();
     let chain = [];
 
@@ -189,6 +201,10 @@
     const errorMsg    = document.getElementById('errorMsg');
     const chainList   = document.getElementById('chainList');
     const scoreBox    = document.getElementById('scoreBox');
+
+    function updateBestDisplay() {
+      document.getElementById('bestBox').textContent = best;
+    }
 
     function init() {
       score = 0;
@@ -200,6 +216,7 @@
       errorMsg.textContent = '';
       chainList.innerHTML = '';
       scoreBox.textContent = '0';
+      updateBestDisplay();
     }
 
     function submit() {
@@ -245,8 +262,25 @@
     }
 
     function showEnd() {
+      if (score > best) {
+        best = score;
+        localStorage.setItem('wordchain_best', best);
+        updateBestDisplay();
+      }
+      const isNew = score > 0 && score >= best;
       document.getElementById('endScore').textContent = `共接了 ${score} 個詞語`;
+      document.getElementById('endBest').textContent = `最高紀錄：${best} 個`;
+      document.getElementById('endNewBadge').style.display = isNew ? 'inline-block' : 'none';
       document.getElementById('endOverlay').style.display = 'flex';
+    }
+
+    function shareWordChain() {
+      const txt = `💬 文字接龍\n本次接了 ${score} 個詞語\n最高紀錄：${best} 個\n\n快來挑戰我！👉 https://porschewen.github.io/GrannysGotGame/wordchain.html`;
+      if (navigator.share) {
+        navigator.share({ text: txt }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(txt).then(() => alert('成績已複製到剪貼簿！'));
+      }
     }
 
     btnSubmit.addEventListener('click', submit);
@@ -261,6 +295,7 @@
       document.getElementById('endOverlay').style.display = 'none';
       init();
     });
+    document.getElementById('btnShareWord').addEventListener('click', shareWordChain);
 
     init();
   </script>
