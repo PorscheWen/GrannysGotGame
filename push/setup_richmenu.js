@@ -17,8 +17,7 @@ const fruitUrl       = `${GAME_URL}fruit.html`;
 const puzzle2048Url  = `${GAME_URL}2048.html`;
 const wordchainUrl   = `${GAME_URL}wordchain.html`;
 const sudokuUrl      = `${GAME_URL}sudoku.html`;
-const shareText = encodeURIComponent(`👵 連阿嬤都贏你！來挑戰看看！\n${memoryUrl}`);
-const shareUrl  = `https://line.me/R/msg/text/${shareText}`;
+const moleUrl        = `${GAME_URL}mole.html`;
 
 async function lineApi(method, endpoint, body) {
   const res = await fetch(`https://api.line.me${endpoint}`, {
@@ -70,7 +69,7 @@ async function main() {
       // 第二列
       { bounds: { x: 0,    y: 843, width: 833, height: 843 }, action: { type: 'uri', label: '文字接龍',   uri: wordchainUrl } },
       { bounds: { x: 833,  y: 843, width: 834, height: 843 }, action: { type: 'uri', label: '數獨',       uri: sudokuUrl } },
-      { bounds: { x: 1667, y: 843, width: 833, height: 843 }, action: { type: 'uri', label: '分享遊戲',   uri: shareUrl } },
+      { bounds: { x: 1667, y: 843, width: 833, height: 843 }, action: { type: 'uri', label: '打地鼠',     uri: moleUrl } },
     ],
   });
   console.log(`[setup] 建立 rich menu: ${richMenuId}`);

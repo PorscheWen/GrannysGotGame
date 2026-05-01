@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="連阿嬤都贏你！打地鼠挑戰">
+  <meta name="theme-color" content="#5B6EE8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>🔨 打地鼠</title>
+  <style>
+    :root {
+      --primary: #5B6EE8;
+      --bg: #F4F6FF;
+      --header-height: 64px;
+      --stats-height: 60px;
+      --control-height: 80px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%; background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+      user-select: none; overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--header-height);
+      background: linear-gradient(135deg, var(--primary), #7B8EF0);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      box-shadow: 0 2px 12px rgba(91,110,232,0.35);
+    }
+    .btn-back {
+      background: rgba(255,255,255,0.2); border: none; border-radius: 10px;
+      color: #fff; font-size: 1rem; padding: 8px 14px; cursor: pointer; white-space: nowrap;
+    }
+    .btn-back:active { transform: scale(0.95); }
+    .app-title { color: #fff; font-size: 1.2rem; font-weight: 700; }
+    .header-timer {
+      background: rgba(255,255,255,0.2); border-radius: 10px;
+      color: #fff; font-size: 1rem; font-weight: 700; padding: 6px 12px;
+      min-width: 60px; text-align: center; font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      position: fixed;
+      top: var(--header-height); left: 0; right: 0;
+      height: var(--stats-height);
+      background: #fff;
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 0 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      z-index: 90;
+    }
+    .stat-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 2px; flex: 1;
+    }
+    .stat-item + .stat-item { border-left: 1px solid #EEEEF5; }
+    .stat-label { font-size: 0.75rem; color: #8888AA; }
+    .stat-value {
+      font-size: 1.3rem; font-weight: 700; color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .diff-tabs { display: flex; gap: 4px; }
+    .diff-tab {
+      background: #eef0fd; color: var(--primary);
+      border: none; border-radius: 8px;
+      font-size: 0.8rem; font-weight: 700;
+      padding: 6px 10px; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .diff-tab.active { background: var(--primary); color: #fff; }
+    .diff-tab:active { transform: scale(0.93); }
+
+    /* ── Game area ── */
+    .game-wrap {
+      position: fixed;
+      top: calc(var(--header-height) + var(--stats-height));
+      left: 0; right: 0;
+      bottom: var(--control-height);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px 12px;
+    }
+
+    /* ── Mole grid ── */
+    .mole-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      width: min(100%, 340px);
+    }
+
+    /* ── Hole ── */
+    .hole {
+      aspect-ratio: 1;
+      position: relative;
+      cursor: pointer;
+    }
+    .hole:active { transform: scale(0.92); }
+
+    /* Grass platform */
+    .hole-grass {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 52%;
+      background: linear-gradient(180deg, #5DB845, #3D9E28);
+      border-radius: 50% 50% 16px 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 -6px 10px rgba(0,0,0,0.15);
+    }
+
+    /* Dark hole opening */
+    .hole-pit {
+      position: absolute;
+      bottom: 44%;
+      left: 50%; transform: translateX(-50%);
+      width: 72%; height: 28%;
+      background: #1A0A00;
+      border-radius: 50%;
+      box-shadow: inset 0 4px 10px rgba(0,0,0,0.8);
+    }
+
+    /* Mole */
+    .mole {
+      position: absolute;
+      bottom: 34%;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      font-size: clamp(2.2rem, 8vw, 3rem);
+      line-height: 1;
+      z-index: 2;
+      pointer-events: none;
+      transition: transform 0.18s cubic-bezier(0.34, 1.4, 0.64, 1),
+                  opacity 0.15s;
+      opacity: 0;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    .hole.up .mole {
+      transform: translateX(-50%) translateY(0%);
+      opacity: 1;
+    }
+    .hole.whacked .mole {
+      transform: translateX(-50%) translateY(120%);
+      opacity: 0;
+      transition: transform 0.12s ease-in, opacity 0.12s;
+    }
+
+    /* Hit flash */
+    .hit-flash {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(255, 220, 0, 0.55);
+      pointer-events: none;
+      animation: hitAnim 0.35s ease forwards;
+      z-index: 5;
+    }
+    @keyframes hitAnim {
+      0%   { opacity: 1; transform: scale(0.8); }
+      100% { opacity: 0; transform: scale(1.4); }
+    }
+
+    /* Score popup */
+    .score-popup {
+      position: absolute;
+      top: 5%; left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.4rem; font-weight: 900;
+      color: #FFD700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      pointer-events: none;
+      animation: scoreFloat 0.65s ease forwards;
+      z-index: 10;
+      white-space: nowrap;
+    }
+    @keyframes scoreFloat {
+      0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-44px); }
+    }
+
+    /* ── Control bar ── */
+    .control-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: var(--control-height);
+      background: #fff;
+      box-shadow: 0 -2px 12px rgba(91,110,232,0.1);
+      display: flex; align-items: center;
+      padding: 0 20px;
+    }
+    .btn-restart {
+      background: linear-gradient(135deg, var(--primary), #7B8EF0);
+      color: #fff; border: none; border-radius: 50px;
+      padding: 14px 0; font-size: 1.1rem; font-weight: 700;
+      width: 100%;
+      box-shadow: 0 4px 16px rgba(91,110,232,0.4);
+      cursor: pointer;
+    }
+    .btn-restart:active { transform: scale(0.97); }
+
+    /* ── End overlay ── */
+    .end-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .end-overlay.open { opacity: 1; pointer-events: all; }
+
+    .end-panel {
+      background: #fff; border-radius: 28px;
+      padding: 36px 28px; max-width: 360px; width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      transform: scale(0.8);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .end-overlay.open .end-panel { transform: scale(1); }
+
+    .end-emoji {
+      font-size: 4.5rem; line-height: 1; margin-bottom: 10px;
+      animation: bounce 1s ease infinite alternate;
+    }
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-10px); }
+    }
+    .end-title { font-size: 2rem; font-weight: 800; color: #1A1A2E; margin-bottom: 4px; }
+    .end-sub { font-size: 0.95rem; color: #8888AA; margin-bottom: 20px; }
+
+    .end-stats {
+      display: flex; gap: 10px; justify-content: center;
+      margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .end-stat {
+      background: #EEF0FD; border-radius: 12px;
+      padding: 14px 16px; min-width: 96px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .end-stat.record {
+      background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff;
+    }
+    .end-stat.record span { font-weight: 700; font-size: 1rem; }
+    .end-stat-icon { font-size: 1.4rem; }
+    .end-stat-label { font-size: 0.78rem; color: #8888AA; }
+    .end-stat-value { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+
+    .end-buttons { display: flex; flex-direction: column; gap: 10px; }
+    .btn-share {
+      background: linear-gradient(135deg, #06C755, #00A040);
+      color: #fff; border: none; border-radius: 50px;
+      padding: 16px 32px; font-size: 1.1rem; font-weight: 700;
+      box-shadow: 0 4px 16px rgba(6,199,85,0.35); cursor: pointer;
+    }
+    .btn-again {
+      background: linear-gradient(135deg, var(--primary), #7B8EF0);
+      color: #fff; border: none; border-radius: 50px;
+      padding: 16px 32px; font-size: 1.1rem; font-weight: 700;
+      box-shadow: 0 4px 16px rgba(91,110,232,0.35); cursor: pointer;
+    }
+    .btn-share:active, .btn-again:active { transform: scale(0.97); }
+
+    /* ── Help overlay ── */
+    .help-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300;
+    }
+    .help-panel {
+      background: #fff; border-radius: 20px;
+      padding: 28px 24px;
+      width: min(360px, calc(100vw - 32px));
+      text-align: center; max-height: 90vh; overflow-y: auto;
+    }
+    .help-panel h2 { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+    .help-steps { text-align: left; margin-bottom: 20px; }
+    .help-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+    .step-num {
+      background: var(--primary); color: #fff;
+      border-radius: 50%; width: 28px; height: 28px; min-width: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .step-text { font-size: 0.95rem; line-height: 1.5; padding-top: 4px; color: #555577; }
+    .btn-got-it {
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 1.05rem; font-weight: 700;
+      padding: 14px 32px; cursor: pointer; width: 100%;
+    }
+    .btn-got-it:active { transform: scale(0.97); }
+
+    /* ── 倒數閃紅 ── */
+    .header-timer.urgent { background: rgba(231,76,60,0.7); animation: pulse 0.5s ease infinite alternate; }
+    @keyframes pulse { from { opacity: 1; } to { opacity: 0.6; } }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <button class="btn-back" onclick="location.href='games.html'">← 返回</button>
+    <span class="app-title">🔨 打地鼠</span>
+    <div class="header-timer" id="timerDisplay">⏱ 60s</div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">分數</span>
+      <span class="stat-value" id="scoreDisplay">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">連擊</span>
+      <span class="stat-value" id="comboDisplay">🔥0</span>
+    </div>
+    <div class="diff-tabs">
+      <button class="diff-tab active" data-diff="easy">慢速</button>
+      <button class="diff-tab" data-diff="medium">中速</button>
+      <button class="diff-tab" data-diff="hard">快速</button>
+    </div>
+  </div>
+
+  <div class="game-wrap">
+    <div class="mole-grid" id="moleGrid"></div>
+  </div>
+
+  <div class="control-bar">
+    <button class="btn-restart" id="btnRestart">🔁 重新開始</button>
+  </div>
+
+  <!-- End overlay -->
+  <div class="end-overlay" id="endOverlay">
+    <div class="end-panel">
+      <div class="end-emoji" id="endEmoji">🎉</div>
+      <h2 class="end-title">時間到！</h2>
+      <p class="end-sub" id="endSub">打地鼠完成！</p>
+      <div class="end-stats">
+        <div class="end-stat">
+          <span class="end-stat-icon">🔨</span>
+          <span class="end-stat-label">打中數</span>
+          <span class="end-stat-value" id="endScore">0</span>
+        </div>
+        <div class="end-stat">
+          <span class="end-stat-icon">🔥</span>
+          <span class="end-stat-label">最高連擊</span>
+          <span class="end-stat-value" id="endMaxCombo">0</span>
+        </div>
+        <div class="end-stat record" id="recordBadge" style="display:none">
+          <span>🏆 新紀錄！</span>
+        </div>
+      </div>
+      <div class="end-buttons">
+        <button class="btn-share" id="btnShare">📤 分享成績</button>
+        <button class="btn-again" id="btnAgain">🔁 再玩一次</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help overlay -->
+  <div class="help-overlay" id="helpOverlay">
+    <div class="help-panel">
+      <h2>🔨 怎麼玩？</h2>
+      <div class="help-steps">
+        <div class="help-step">
+          <span class="step-num">1</span>
+          <p class="step-text">地鼠從洞裡冒出來，趕快點它！</p>
+        </div>
+        <div class="help-step">
+          <span class="step-num">2</span>
+          <p class="step-text">每打中一隻得 1 分，連續打中有連擊加成！</p>
+        </div>
+        <div class="help-step">
+          <span class="step-num">3</span>
+          <p class="step-text">60 秒內打越多越高分，挑戰最高紀錄！</p>
+        </div>
+        <div class="help-step">
+          <span class="step-num">4</span>
+          <p class="step-text">選擇慢速／中速／快速調整難度。</p>
+        </div>
+      </div>
+      <button class="btn-got-it" id="btnGotIt">我知道了，開始打！</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    'use strict';
+
+    const DIFF_CFG = {
+      easy:   { spawnMs: 1100, upMs: 1600, maxActive: 1 },
+      medium: { spawnMs: 800,  upMs: 1150, maxActive: 2 },
+      hard:   { spawnMs: 550,  upMs: 750,  maxActive: 3 },
+    };
+    const GAME_DURATION = 60;
+    const GAME_URL = (window.GAME_CONFIG?.gameUrl || 'https://porschewen.github.io/GrannysGotGame/');
+
+    let st = {
+      diff: 'easy',
+      score: 0,
+      combo: 0,
+      maxCombo: 0,
+      timeLeft: GAME_DURATION,
+      running: false,
+      activeHoles: new Set(),
+      hideTimers: [],
+      spawnTimer: null,
+      countTimer: null,
+    };
+
+    /* ── Build 3×3 grid ── */
+    const grid = document.getElementById('moleGrid');
+    const holes = Array.from({ length: 9 }, (_, i) => {
+      const hole = document.createElement('div');
+      hole.className = 'hole';
+      hole.innerHTML = `
+        <div class="mole">🐹</div>
+        <div class="hole-pit"></div>
+        <div class="hole-grass"></div>`;
+      hole.addEventListener('click', () => whack(i));
+      grid.appendChild(hole);
+      return hole;
+    });
+
+    /* ── Whack ── */
+    function whack(i) {
+      if (!st.running || !st.activeHoles.has(i)) return;
+      const hole = holes[i];
+      if (hole.dataset.whacked) return;
+      hole.dataset.whacked = '1';
+
+      clearTimeout(hole._hide);
+      hole.classList.remove('up');
+      hole.classList.add('whacked');
+      st.activeHoles.delete(i);
+
+      st.score++;
+      st.combo++;
+      if (st.combo > st.maxCombo) st.maxCombo = st.combo;
+      renderStats();
+
+      // score popup
+      const pop = document.createElement('div');
+      pop.className = 'score-popup';
+      pop.textContent = st.combo >= 3 ? `+${st.combo} 🔥` : '+1';
+      hole.appendChild(pop);
+      pop.addEventListener('animationend', () => pop.remove(), { once: true });
+
+      // hit flash
+      const flash = document.createElement('div');
+      flash.className = 'hit-flash';
+      hole.appendChild(flash);
+      flash.addEventListener('animationend', () => flash.remove(), { once: true });
+
+      setTimeout(() => {
+        hole.classList.remove('whacked');
+        delete hole.dataset.whacked;
+      }, 300);
+    }
+
+    /* ── Show mole ── */
+    function showMole(i) {
+      if (!st.running || st.activeHoles.has(i)) return;
+      const hole = holes[i];
+      hole.classList.add('up');
+      st.activeHoles.add(i);
+
+      const upMs = DIFF_CFG[st.diff].upMs;
+      hole._hide = setTimeout(() => {
+        hole.classList.remove('up');
+        st.activeHoles.delete(i);
+        if (st.activeHoles.size === 0) { st.combo = 0; renderStats(); }
+      }, upMs);
+      st.hideTimers.push(hole._hide);
+    }
+
+    /* ── Spawn loop ── */
+    function spawnLoop() {
+      const cfg = DIFF_CFG[st.diff];
+      const avail = [...Array(9).keys()].filter(i => !st.activeHoles.has(i));
+      if (avail.length === 0) return;
+      shuffle(avail);
+      const count = Math.min(cfg.maxActive - st.activeHoles.size, avail.length, 1 + (st.diff === 'hard' ? 1 : 0));
+      for (let k = 0; k < Math.max(count, 1); k++) showMole(avail[k]);
+    }
+
+    /* ── Game flow ── */
+    function startGame() {
+      clearAll();
+      holes.forEach(h => { h.classList.remove('up', 'whacked'); delete h.dataset.whacked; });
+      st.score = 0; st.combo = 0; st.maxCombo = 0;
+      st.timeLeft = GAME_DURATION; st.running = true;
+      st.activeHoles.clear(); st.hideTimers = [];
+      document.getElementById('endOverlay').classList.remove('open');
+      renderStats();
+      renderTimer();
+
+      st.spawnTimer = setInterval(spawnLoop, DIFF_CFG[st.diff].spawnMs);
+      st.countTimer = setInterval(() => {
+        st.timeLeft--;
+        renderTimer();
+        if (st.timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function clearAll() {
+      clearInterval(st.spawnTimer);
+      clearInterval(st.countTimer);
+      st.hideTimers.forEach(t => clearTimeout(t));
+      st.hideTimers = [];
+    }
+
+    function endGame() {
+      clearAll();
+      st.running = false;
+      st.activeHoles.clear();
+      holes.forEach(h => { h.classList.remove('up', 'whacked'); delete h.dataset.whacked; });
+
+      const isNew = saveScore(st.diff, st.score);
+      setTimeout(() => {
+        document.getElementById('endScore').textContent = st.score;
+        document.getElementById('endMaxCombo').textContent = st.maxCombo;
+        document.getElementById('recordBadge').style.display = isNew ? 'flex' : 'none';
+        document.getElementById('endEmoji').textContent =
+          st.score >= 25 ? '🏆' : st.score >= 15 ? '🎉' : '😅';
+        document.getElementById('endSub').textContent =
+          st.score >= 25 ? '連阿嬤都輸給你了！' : st.score >= 15 ? '打得不錯！' : '繼續努力！';
+        document.getElementById('endOverlay').classList.add('open');
+      }, 400);
+    }
+
+    /* ── Helpers ── */
+    function renderStats() {
+      document.getElementById('scoreDisplay').textContent = st.score;
+      document.getElementById('comboDisplay').textContent = `🔥${st.combo}`;
+    }
+
+    function renderTimer() {
+      const el = document.getElementById('timerDisplay');
+      el.textContent = `⏱ ${st.timeLeft}s`;
+      el.classList.toggle('urgent', st.timeLeft <= 10);
+    }
+
+    function saveScore(diff, score) {
+      const data = JSON.parse(localStorage.getItem('mole_best') || '{}');
+      if ((data[diff] || 0) < score) {
+        data[diff] = score;
+        localStorage.setItem('mole_best', JSON.stringify(data));
+        return true;
+      }
+      return false;
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function shareResult() {
+      const name = { easy: '慢速', medium: '中速', hard: '快速' }[st.diff];
+      const txt = `🔨 打地鼠 ${name}\n🐹 打中：${st.score} 隻\n🔥 最高連擊：${st.maxCombo}\n\n來挑戰看看！👉 ${GAME_URL}mole.html`;
+      if (navigator.share) {
+        navigator.share({ text: txt }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(txt).then(() => alert('成績已複製！')).catch(() => {});
+      }
+    }
+
+    /* ── Events ── */
+    document.getElementById('btnRestart').addEventListener('click', startGame);
+    document.getElementById('btnAgain').addEventListener('click', () => {
+      document.getElementById('endOverlay').classList.remove('open');
+      startGame();
+    });
+    document.getElementById('btnShare').addEventListener('click', shareResult);
+    document.getElementById('btnGotIt').addEventListener('click', () => {
+      document.getElementById('helpOverlay').style.display = 'none';
+      startGame();
+    });
+    document.querySelectorAll('.diff-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.diff-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        st.diff = tab.dataset.diff;
+        startGame();
+      });
+    });
+  </script>
+</body>
+</html>
