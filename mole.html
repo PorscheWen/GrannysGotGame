@@ -42,17 +42,8 @@
       color: #fff; font-size: 1rem; padding: 8px 14px; cursor: pointer; white-space: nowrap;
     }
     .btn-back:active { transform: scale(0.95); }
-    .app-title { color: #fff; font-size: 1.15rem; font-weight: 700; text-align: center; }
-    .header-timer {
-      background: rgba(255,255,255,0.2); border-radius: 10px;
-      color: #fff; font-size: 1rem; font-weight: 700; padding: 6px 12px;
-      min-width: 58px; text-align: center; font-variant-numeric: tabular-nums;
-    }
-    .header-timer.urgent {
-      background: rgba(231,76,60,0.75);
-      animation: timerPulse 0.5s ease infinite alternate;
-    }
-    @keyframes timerPulse { from { opacity: 1; } to { opacity: 0.55; } }
+    .app-title { color: #fff; font-size: 1.15rem; font-weight: 700; text-align: center; flex: 1; }
+    .header-spacer { width: 70px; }
 
     /* ── Stats bar ── */
     .stats-bar {
@@ -75,6 +66,19 @@
       font-variant-numeric: tabular-nums; white-space: nowrap;
     }
     .stat-value.sm { font-size: 0.95rem; }
+
+    /* 中欄大計時器 */
+    .stat-timer { flex: 1.2; }
+    .timer-num {
+      font-size: 2rem; font-weight: 800; color: var(--primary);
+      font-variant-numeric: tabular-nums; line-height: 1;
+      transition: color 0.3s;
+    }
+    .timer-num.urgent {
+      color: #E74C3C;
+      animation: timerPulse 0.5s ease infinite alternate;
+    }
+    @keyframes timerPulse { from { opacity: 1; } to { opacity: 0.45; } }
 
     /* ── Progress bar ── */
     .progress-wrap {
@@ -319,22 +323,22 @@
 
   <header class="app-header">
     <button class="btn-back" onclick="location.href='games.html'">← 返回</button>
-    <span class="app-title" id="appTitle">🔨 打地鼠 關卡挑戰</span>
-    <div class="header-timer" id="timerDisplay">⏱ 30s</div>
+    <span class="app-title">🔨 打地鼠 關卡挑戰</span>
+    <div class="header-spacer"></div>
   </header>
 
   <div class="stats-bar">
     <div class="stat-item">
-      <span class="stat-label">打中 / 目標</span>
+      <span class="stat-label">點擊數 / 目標</span>
       <span class="stat-value" id="scoreDisplay">0 / 6</span>
+    </div>
+    <div class="stat-item stat-timer">
+      <span class="stat-label">⏱ 剩餘秒數</span>
+      <span class="timer-num" id="timerDisplay">30</span>
     </div>
     <div class="stat-item">
       <span class="stat-label">關卡進度</span>
       <span class="stat-value sm" id="levelDisplay">第 1 關 / 10</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">連擊</span>
-      <span class="stat-value" id="comboDisplay">🔥0</span>
     </div>
   </div>
 
@@ -660,7 +664,7 @@
 
     function renderTimer() {
       const el = document.getElementById('timerDisplay');
-      el.textContent = `⏱ ${st.timeLeft}s`;
+      el.textContent = st.timeLeft;
       el.classList.toggle('urgent', st.timeLeft <= 8);
     }
 
