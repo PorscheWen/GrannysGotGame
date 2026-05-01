@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 
 const ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-const LIFF_ID      = process.env.LIFF_ID;
 const GAME_URL     = process.env.GAME_URL || 'https://porschewen.github.io/GrannysGotGame/';
 
 if (!ACCESS_TOKEN) {
@@ -13,7 +12,7 @@ if (!ACCESS_TOKEN) {
   process.exit(1);
 }
 
-const memoryUrl      = LIFF_ID ? `https://liff.line.me/${LIFF_ID}` : GAME_URL;
+const memoryUrl      = GAME_URL;
 const fruitUrl       = `${GAME_URL}fruit.html`;
 const puzzle2048Url  = `${GAME_URL}2048.html`;
 const wordchainUrl   = `${GAME_URL}wordchain.html`;
