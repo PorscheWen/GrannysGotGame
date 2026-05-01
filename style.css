@@ -912,183 +912,85 @@ button {
   }
 }
 
+/* ===== 頁首返回按鈕 & 計時器 ===== */
+.btn-back {
+  background: rgba(255,255,255,0.2); border: none; border-radius: 10px;
+  color: #fff; font-size: 1rem; padding: 8px 14px; cursor: pointer; white-space: nowrap;
+}
+.btn-back:active { transform: scale(0.95); }
+
+.header-timer {
+  background: rgba(255,255,255,0.2); border-radius: 10px;
+  color: #fff; font-size: 0.95rem; font-weight: 700; padding: 6px 12px;
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+
+/* ===== 難度 Tabs ===== */
+.diff-tabs { display: flex; gap: 4px; }
+.diff-tab {
+  background: #eef0fd; color: var(--primary);
+  border: none; border-radius: 8px;
+  font-size: 0.8rem; font-weight: 700;
+  padding: 6px 10px; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.diff-tab.active { background: var(--primary); color: #fff; }
+.diff-tab:active { transform: scale(0.93); }
+
 /* ===== 頁首按鈕群組 ===== */
 .header-actions {
   display: flex;
   gap: 8px;
 }
 
-/* ===== 說明彈窗 ===== */
+/* ===== 說明彈窗（置中，fruit.html 樣式） ===== */
 .help-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 250;
-  display: flex;
-  align-items: flex-end;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-
-.help-overlay.open {
-  opacity: 1;
-  pointer-events: all;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300;
 }
 
 .help-panel {
-  background: white;
-  width: 100%;
-  max-height: 88vh;
-  border-radius: 24px 24px 0 0;
-  padding: 24px 20px 32px;
-  overflow-y: auto;
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fff; border-radius: 20px;
+  padding: 28px 24px;
+  width: min(360px, calc(100vw - 32px));
+  text-align: center;
+  max-height: 90vh; overflow-y: auto;
 }
 
-.help-overlay.open .help-panel {
-  transform: translateY(0);
-}
-
-.help-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.help-header h2 {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.help-header .btn-icon {
-  background: #F0F0F8;
-  color: var(--text-secondary);
-  font-size: 1.1rem;
+.help-panel h2 {
+  font-size: 1.4rem; font-weight: 700;
+  color: var(--primary); margin-bottom: 16px;
 }
 
 /* 步驟列表 */
 .help-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  text-align: left; margin-bottom: 20px;
 }
 
 .help-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: #F8F8FC;
-  border-radius: var(--radius-sm);
-  padding: 16px;
+  display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;
 }
 
 .step-num {
-  min-width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), #7B8EF0);
-  color: white;
-  font-size: var(--font-size-base);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  background: var(--primary); color: #fff;
+  border-radius: 50%; width: 28px; height: 28px; min-width: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
 }
 
-.step-content {
-  flex: 1;
+.step-text {
+  font-size: 0.95rem; line-height: 1.5; padding-top: 4px; color: var(--text-secondary);
 }
 
-.step-title {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+.btn-got-it {
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 1.05rem; font-weight: 700;
+  padding: 14px 32px; cursor: pointer; width: 100%;
 }
-
-.step-desc {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-/* 小提示 */
-.help-tips {
-  background: #FFF8E6;
-  border-left: 4px solid var(--warning);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-}
-
-.help-tips h3 {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 10px;
-}
-
-.help-tips ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.help-tips li {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  line-height: 1.5;
-  padding-left: 20px;
-  position: relative;
-}
-
-.help-tips li::before {
-  content: '▸';
-  position: absolute;
-  left: 0;
-  color: var(--warning);
-  font-weight: 700;
-}
-
-/* 深色模式 */
-@media (prefers-color-scheme: dark) {
-  .help-panel {
-    background: #1E1E3A;
-    color: #F0F0FF;
-  }
-
-  .help-step {
-    background: #12122A;
-  }
-
-  .step-title {
-    color: #F0F0FF;
-  }
-
-  .step-desc {
-    color: #9999BB;
-  }
-
-  .help-tips {
-    background: #2A2000;
-    border-color: var(--warning);
-  }
-
-  .help-tips h3 {
-    color: #F0F0FF;
-  }
-
-  .help-tips li {
-    color: #CCAA55;
-  }
-}
+.btn-got-it:active { transform: scale(0.97); }
 
 /* ===== 工具類別 ===== */
 .visually-hidden {

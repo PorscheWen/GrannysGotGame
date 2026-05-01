@@ -60,7 +60,7 @@
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       border: 3px solid #3a4fcc;
-      border-radius: 10px;
+      border-radius: 0;
       overflow: hidden;
       gap: 0;
       width: min(calc(100vw - 24px), 380px);
@@ -76,10 +76,10 @@
       position: relative;
       transition: background 0.12s;
     }
-    /* thick box borders */
-    .cell[data-c="2"] { border-right: 2.5px solid #3a4fcc; }
-    .cell[data-r="1"] { border-bottom: 2.5px solid #3a4fcc; }
-    .cell[data-r="3"] { border-bottom: 2.5px solid #3a4fcc; }
+    /* thick box borders — same weight as outer frame */
+    .cell[data-c="2"] { border-right: 3px solid #3a4fcc; }
+    .cell[data-r="1"] { border-bottom: 3px solid #3a4fcc; }
+    .cell[data-r="3"] { border-bottom: 3px solid #3a4fcc; }
 
     .cell.given { background: #eef0fd; color: #2230a0; cursor: default; }
     .cell.selected { background: #c8d0fc !important; }

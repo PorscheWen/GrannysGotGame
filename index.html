@@ -3,154 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="連阿嬤都贏你！Granny's Got Game - 三代同堂翻牌配對，動動腦，保持大腦活躍">
+  <meta name="description" content="連阿嬤都贏你！翻牌記憶挑戰">
   <meta name="theme-color" content="#5B6EE8">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="阿嬤贏你">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <title>👵 連阿嬤都贏你</title>
+  <title>🃏 翻牌記憶</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
   <script src="config.js"></script>
 </head>
 <body>
 
-  <!-- 頂部標題列 -->
   <header class="app-header">
-    <h1 class="app-title">👵 連阿嬤都贏你</h1>
-    <div class="header-actions">
-      <button class="btn-icon" id="btnTrophy" aria-label="最佳成績">🏆</button>
-      <button class="btn-icon" id="btnHelp" aria-label="遊戲說明">❓</button>
-      <button class="btn-icon" id="btnSettings" aria-label="設定">⚙️</button>
-    </div>
+    <button class="btn-back" onclick="location.href='games.html'">← 返回</button>
+    <h1 class="app-title">🃏 翻牌記憶</h1>
+    <div class="header-timer">⏱ <span id="timer">00:00</span></div>
   </header>
 
-  <!-- 遊戲統計列 -->
   <div class="stats-bar">
     <div class="stat-item">
-      <span class="stat-icon">⏱️</span>
-      <span class="stat-label">時間</span>
-      <span class="stat-value" id="timer">00:00</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-icon">🔄</span>
       <span class="stat-label">翻牌</span>
       <span class="stat-value" id="flipCount">0</span>
     </div>
     <div class="stat-item">
-      <span class="stat-icon">✅</span>
       <span class="stat-label">配對</span>
-      <span class="stat-value" id="pairsFound">0 / 0</span>
+      <span class="stat-value" id="pairsFound">0/0</span>
+    </div>
+    <div class="diff-tabs">
+      <button class="diff-tab active" data-diff="easy">初級</button>
+      <button class="diff-tab" data-diff="medium">中級</button>
+      <button class="diff-tab" data-diff="hard">高級</button>
     </div>
   </div>
 
-  <!-- 遊戲主區域 -->
   <main class="game-main">
-    <div class="game-board" id="gameBoard" role="main" aria-label="記憶遊戲牌局">
-      <!-- 卡片由 JS 動態產生 -->
-    </div>
+    <div class="game-board" id="gameBoard" role="main" aria-label="記憶遊戲牌局"></div>
   </main>
 
-  <!-- 底部控制列 -->
   <div class="control-bar">
-    <button class="btn btn-restart" id="btnRestart" aria-label="重新開始">
-      🔁 重新開始
-    </button>
-    <a class="btn btn-fruit" href="games.html" aria-label="所有遊戲">
-      🎮 更多遊戲
-    </a>
-  </div>
-
-  <!-- 設定面板 (側滑) -->
-  <div class="settings-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="遊戲設定">
-    <div class="settings-panel">
-      <div class="settings-header">
-        <h2>遊戲設定</h2>
-        <button class="btn-icon" id="btnCloseSettings" aria-label="關閉設定">✕</button>
-      </div>
-
-      <div class="settings-section">
-        <h3>難度選擇</h3>
-        <div class="difficulty-group" role="radiogroup" aria-label="難度選擇">
-          <label class="difficulty-option" for="diffEasy">
-            <input type="radio" id="diffEasy" name="difficulty" value="easy" checked>
-            <span class="difficulty-card easy">
-              <span class="diff-icon">🌱</span>
-              <span class="diff-name">初級</span>
-              <span class="diff-desc">12 張牌 (6 對)</span>
-            </span>
-          </label>
-          <label class="difficulty-option" for="diffMedium">
-            <input type="radio" id="diffMedium" name="difficulty" value="medium">
-            <span class="difficulty-card medium">
-              <span class="diff-icon">🌿</span>
-              <span class="diff-name">中級</span>
-              <span class="diff-desc">16 張牌 (8 對)</span>
-            </span>
-          </label>
-          <label class="difficulty-option" for="diffHard">
-            <input type="radio" id="diffHard" name="difficulty" value="hard">
-            <span class="difficulty-card hard">
-              <span class="diff-icon">🌳</span>
-              <span class="diff-name">高級</span>
-              <span class="diff-desc">24 張牌 (12 對)</span>
-            </span>
-          </label>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <h3>圖案主題</h3>
-        <div class="theme-group" role="radiogroup" aria-label="圖案主題">
-          <label class="theme-option" for="themeFruits">
-            <input type="radio" id="themeFruits" name="theme" value="fruits" checked>
-            <span class="theme-card">🍎 水果</span>
-          </label>
-          <label class="theme-option" for="themeAnimals">
-            <input type="radio" id="themeAnimals" name="theme" value="animals">
-            <span class="theme-card">🐶 動物</span>
-          </label>
-          <label class="theme-option" for="themeNature">
-            <input type="radio" id="themeNature" name="theme" value="nature">
-            <span class="theme-card">🌸 自然</span>
-          </label>
-          <label class="theme-option" for="themeMixed">
-            <input type="radio" id="themeMixed" name="theme" value="mixed">
-            <span class="theme-card">🎲 混合</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <h3>字體大小</h3>
-        <div class="font-size-controls">
-          <button class="btn btn-font" id="fontSmall" data-size="normal">標準</button>
-          <button class="btn btn-font active" id="fontLarge" data-size="large">大字</button>
-          <button class="btn btn-font" id="fontXLarge" data-size="xlarge">超大字</button>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <h3>最佳成績</h3>
-        <div class="best-scores" id="bestScores">
-          <!-- 由 JS 填入 -->
-        </div>
-        <button class="btn btn-clear-scores" id="btnClearScores">清除成績</button>
-      </div>
-
-      <button class="btn btn-start-game" id="btnStartGame">翻牌記憶</button>
-    </div>
+    <button class="btn btn-restart" id="btnRestart">🔁 重新開始</button>
   </div>
 
   <!-- 勝利彈窗 -->
-  <div class="win-overlay" id="winOverlay" role="dialog" aria-modal="true" aria-label="遊戲完成">
+  <div class="win-overlay" id="winOverlay" role="dialog" aria-modal="true">
     <div class="win-panel">
       <div class="win-emoji">🎉</div>
       <h2 class="win-title">太棒了！</h2>
-      <p class="win-subtitle">您完成了記憶挑戰！</p>
+      <p class="win-subtitle">完成翻牌記憶！</p>
       <div class="win-stats">
         <div class="win-stat">
           <span class="win-stat-icon">⏱️</span>
@@ -167,86 +68,35 @@
         </div>
       </div>
       <div class="win-buttons">
-        <button class="btn btn-share-line" id="btnShareLine" style="display:none">📤 分享到 LINE</button>
+        <button class="btn btn-share-line" id="btnShareLine">📤 分享成績</button>
         <button class="btn btn-play-again" id="btnPlayAgain">🔁 再玩一次</button>
-        <button class="btn btn-change-diff" id="btnChangeDiff">⚙️ 更換設定</button>
       </div>
     </div>
   </div>
 
-  <!-- 遊戲說明彈窗 -->
-  <div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-label="遊戲說明">
+  <!-- 說明彈窗（fruit.html 樣式：首次進入顯示，置中） -->
+  <div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true">
     <div class="help-panel">
-      <div class="help-header">
-        <h2>❓ 遊戲說明</h2>
-        <button class="btn-icon" id="btnCloseHelp" aria-label="關閉說明">✕</button>
-      </div>
-
+      <h2>🃏 怎麼玩？</h2>
       <div class="help-steps">
         <div class="help-step">
           <span class="step-num">1</span>
-          <div class="step-content">
-            <p class="step-title">點擊任一張牌</p>
-            <p class="step-desc">牌面朝下，點擊後會翻開，露出圖案。</p>
-          </div>
+          <p class="step-text">點擊任一張牌，翻開查看圖案</p>
         </div>
         <div class="help-step">
           <span class="step-num">2</span>
-          <div class="step-content">
-            <p class="step-title">再點一張牌</p>
-            <p class="step-desc">試著找到和第一張相同的圖案。</p>
-          </div>
+          <p class="step-text">再點另一張，試著找出相同圖案配對</p>
         </div>
         <div class="help-step">
           <span class="step-num">3</span>
-          <div class="step-content">
-            <p class="step-title">配對成功 ✅</p>
-            <p class="step-desc">兩張圖案相同，卡片變綠色，留在桌面上。</p>
-          </div>
+          <p class="step-text">配對成功留在桌面，失敗則翻回背面，記住位置！</p>
         </div>
         <div class="help-step">
           <span class="step-num">4</span>
-          <div class="step-content">
-            <p class="step-title">配對失敗 ❌</p>
-            <p class="step-desc">圖案不同，兩張牌會翻回背面，請記住位置再試。</p>
-          </div>
-        </div>
-        <div class="help-step">
-          <span class="step-num">5</span>
-          <div class="step-content">
-            <p class="step-title">全部配對完成 🎉</p>
-            <p class="step-desc">找出所有對子即獲勝！翻牌次數越少、時間越短越好。</p>
-          </div>
+          <p class="step-text">全部配對完成就贏了！翻牌次數越少越厲害！</p>
         </div>
       </div>
-
-      <div class="help-tips">
-        <h3>💡 小提示</h3>
-        <ul>
-          <li>先記住翻開過的牌的位置</li>
-          <li>翻牌次數少 = 記憶力強</li>
-          <li>可在設定中調整難度與字體大小</li>
-        </ul>
-      </div>
-
-      <button class="btn btn-start-game" id="btnHelpStart">我知道了，開始翻牌記憶！</button>
-    </div>
-  </div>
-
-  <!-- 最佳成績彈窗 -->
-  <div class="trophy-overlay" id="trophyOverlay" role="dialog" aria-modal="true" aria-label="最佳成績">
-    <div class="trophy-panel">
-      <div class="trophy-header">
-        <h2>🏆 最佳成績</h2>
-        <button class="btn-icon" id="btnCloseTrophy" aria-label="關閉">✕</button>
-      </div>
-      <div class="trophy-scores" id="trophyScores">
-        <!-- 由 JS 填入 -->
-      </div>
-      <div class="trophy-buttons">
-        <button class="btn btn-share-line" id="btnShareBest">📤 分享成績到 LINE</button>
-        <button class="btn btn-clear-scores" id="btnClearTrophyScores">🗑️ 清除成績</button>
-      </div>
+      <button class="btn-got-it" id="btnGotIt">我知道了，開始翻牌！</button>
     </div>
   </div>
 
