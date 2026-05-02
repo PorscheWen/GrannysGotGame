@@ -37,7 +37,7 @@ cd GrannysGotGame
 python -m http.server 8765
 ```
 
-瀏覽器開啟 [http://localhost:8765/test.html](http://localhost:8765/test.html) 可快速連到各遊戲；或直接開 [http://localhost:8765/games.html](http://localhost:8765/games.html) 進入大廳。
+瀏覽器開啟 [http://localhost:8765/games.html](http://localhost:8765/games.html) 進入遊戲大廳。
 
 ---
 

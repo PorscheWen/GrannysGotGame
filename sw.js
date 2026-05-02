@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'memory-game-v6';
+const CACHE_NAME = 'memory-game-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const ASSETS = [
   './2048.html',
   './sudoku.html',
   './wordchain.html',
+  './mole.html',
   './style.css',
   './app.js',
   './config.js',
@@ -18,15 +19,21 @@ const ASSETS = [
   './icons/icon-512.png',
 ];
 
-// 安裝：預先快取所有資源
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(async cache => {
+      for (const url of ASSETS) {
+        try {
+          await cache.add(url);
+        } catch {
+          /* 單一資源失敗仍繼續，避免整站 SW 安裝失敗 */
+        }
+      }
+    })
   );
   self.skipWaiting();
 });
 
-// 啟用：清除舊版快取
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -36,7 +43,6 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// 攔截請求：快取優先，失敗才走網路
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
