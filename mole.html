@@ -436,7 +436,7 @@
         </div>
         <div class="help-step">
           <span class="step-num">3</span>
-          <p class="step-text">每關速度加快，第 4 關起同時出現多隻地鼠！</p>
+          <p class="step-text">第 4 關起可能同時出現多隻地鼠，越後面目標越多！</p>
         </div>
       </div>
       <table class="level-table">
@@ -444,7 +444,7 @@
         <tr><td>1–3</td><td>30s</td><td>6 / 9 / 12</td><td>1 隻</td></tr>
         <tr><td>4–7</td><td>30s</td><td>14–20</td><td>2 隻</td></tr>
         <tr><td>8–9</td><td>30s</td><td>22 / 25</td><td>3 隻</td></tr>
-        <tr><td>10 👑</td><td>35s</td><td>28</td><td>3 隻（最快）</td></tr>
+        <tr><td>10 👑</td><td>35s</td><td>28</td><td>3 隻</td></tr>
       </table>
       <button class="btn-got-it" id="btnGotIt">我知道了，開始打！</button>
     </div>
@@ -659,7 +659,6 @@
       const cfg = LEVELS[st.level - 1];
       document.getElementById('scoreDisplay').textContent = `${st.score} / ${cfg.target}`;
       document.getElementById('levelDisplay').textContent = `第 ${st.level} 關 / 10`;
-      document.getElementById('comboDisplay').textContent = `🔥${st.combo}`;
     }
 
     function renderTimer() {

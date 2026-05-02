@@ -2,22 +2,39 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#5B6EE8">
   <title>👵 連阿嬤都贏你 - 遊戲大廳</title>
   <style>
-    :root { --primary:#5B6EE8; --bg:#F4F6FF; }
+    /* 與 style.css（翻牌等）一致：根字體 18px，避免電腦／手機「比例」差太多 */
+    :root { --primary:#5B6EE8; --bg:#F4F6FF; --card:#fff; --text:#1A1A2E; --muted:#8896AB; }
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-    html,body { min-height:100%; background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+    html {
+      font-size: 18px;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      min-height: 100%;
+      min-height: 100dvh;
+      background: var(--bg);
+    }
+    body {
+      min-height: 100%;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
 
     .app-header {
-      background:var(--primary); padding:20px 16px 16px;
+      background:var(--primary); padding:max(20px, env(safe-area-inset-top)) 16px 16px;
       box-shadow:0 2px 12px rgba(91,110,232,.3); text-align:center;
     }
     .app-title { color:#fff; font-size:1.3rem; font-weight:900; }
     .app-sub { color:rgba(255,255,255,.75); font-size:.85rem; margin-top:4px; }
 
-    .content { padding:20px 16px 32px; max-width:480px; margin:0 auto; }
+    .content { padding:20px 16px max(32px, env(safe-area-inset-bottom)); max-width:480px; margin:0 auto; }
 
     .section-title {
       font-size:.85rem; font-weight:700; color:#8896AB;
@@ -27,7 +44,7 @@
     .games-grid { display:flex; flex-direction:column; gap:12px; margin-bottom:28px; }
 
     .game-card {
-      background:#fff; border-radius:16px;
+      background:var(--card); border-radius:16px;
       box-shadow:0 3px 12px rgba(91,110,232,.1);
       display:flex; align-items:center; gap:16px;
       padding:18px 16px; cursor:pointer; text-decoration:none;
@@ -47,8 +64,8 @@
     .icon-teal   { background:#D5F0EF; }
 
     .game-info { flex:1; min-width:0; }
-    .game-name { font-size:1.15rem; font-weight:800; color:#1A1A2E; margin-bottom:4px; }
-    .game-desc { font-size:.85rem; color:#8896AB; line-height:1.4; }
+    .game-name { font-size:1.15rem; font-weight:800; color:var(--text); margin-bottom:4px; }
+    .game-desc { font-size:.85rem; color:var(--muted); line-height:1.4; }
     .game-badge {
       background:var(--primary); color:#fff;
       font-size:.7rem; font-weight:700; border-radius:6px;
@@ -57,7 +74,26 @@
     .game-badge.green  { background:#27AE60; }
     .game-badge.new    { background:#E74C3C; }
 
-    .footer { text-align:center; color:#aaa; font-size:.8rem; padding:8px; }
+    .footer { text-align:center; color:#aaa; font-size:.8rem; padding:8px 8px max(8px, env(safe-area-inset-bottom)); }
+
+    /* 與 style.css 一致：系統深色時大廳也跟著深，避免「大廳白、進遊戲黑」 */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #6B7AF0;
+        --bg: #12122A;
+        --card: #1E1E3A;
+        --text: #F0F0FF;
+        --muted: #9999BB;
+      }
+      .section-title { color: var(--muted); }
+      .game-card { box-shadow: 0 3px 12px rgba(0,0,0,0.35); }
+      .icon-blue   { background:#2A2D55; }
+      .icon-green  { background:#1E3D2E; }
+      .icon-orange { background:#4A3520; }
+      .icon-purple { background:#352A55; }
+      .icon-teal   { background:#1E3D45; }
+      .footer { color:#666; }
+    }
   </style>
 </head>
 <body>
@@ -108,13 +144,13 @@
       </a>
     </div>
 
-    <div class="section-title">反應 & 速度</div>
+    <div class="section-title">反應 & 動作</div>
     <div class="games-grid">
       <a class="game-card" href="mole.html">
         <div class="game-icon icon-orange">🔨</div>
         <div class="game-info">
           <div class="game-name">打地鼠</div>
-          <div class="game-desc">地鼠冒出來就快打！60 秒挑戰最高分</div>
+          <div class="game-desc">地鼠冒出來就快打！10 關目標挑戰</div>
         </div>
         <span class="game-badge new">新</span>
       </a>
@@ -135,5 +171,10 @@
 
   <div class="footer">連阿嬤都贏你 │ Granny's Got Game</div>
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    }
+  </script>
 </body>
 </html>

@@ -73,13 +73,19 @@
       font-size: clamp(1.8rem, 7vw, 2.6rem);
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(91,110,232,0.12);
-      transition: transform 0.12s, background 0.12s, opacity 0.25s;
+      transition: transform 0.12s, background 0.12s, opacity 0.25s, box-shadow 0.12s;
       position: relative;
     }
+    /* 六種水果：紅／黃／紫／橘／粉／綠 色系底，方便長輩辨識 */
+    .cell.fruit-t0 { background: linear-gradient(160deg, #ffcdd2 0%, #e57373 100%); box-shadow: 0 2px 8px rgba(229,115,115,0.35); }
+    .cell.fruit-t1 { background: linear-gradient(160deg, #fff9c4 0%, #fdd835 100%); box-shadow: 0 2px 8px rgba(253,216,53,0.4); }
+    .cell.fruit-t2 { background: linear-gradient(160deg, #e1bee7 0%, #ab47bc 100%); box-shadow: 0 2px 8px rgba(171,71,188,0.35); }
+    .cell.fruit-t3 { background: linear-gradient(160deg, #ffe0b2 0%, #fb8c00 100%); box-shadow: 0 2px 8px rgba(251,140,0,0.35); }
+    .cell.fruit-t4 { background: linear-gradient(160deg, #f8bbd9 0%, #ec407a 100%); box-shadow: 0 2px 8px rgba(236,64,122,0.35); }
+    .cell.fruit-t5 { background: linear-gradient(160deg, #c8e6c9 0%, #66bb6a 100%); box-shadow: 0 2px 8px rgba(102,187,106,0.35); }
     .cell:active { transform: scale(0.88); }
     .cell.selected {
-      background: #d0d8ff;
-      box-shadow: 0 0 0 3px var(--primary);
+      box-shadow: 0 0 0 3px var(--primary), 0 4px 12px rgba(91,110,232,0.35);
       transform: scale(1.08);
     }
     .cell.matched {
@@ -217,7 +223,8 @@
   <script>
     'use strict';
 
-    const FRUITS = ['🍌', '🍍', '🥝', '🍊', '🍇', '🍓'];
+    /* 六色水果：紅蘋果、黃檸檬、紫葡萄、橘橙、粉草莓、綠奇異果 */
+    const FRUITS = ['🍎', '🍋', '🍇', '🍊', '🍓', '🥝'];
     const ROWS = 7, COLS = 7;
 
     let grid = [];
@@ -257,7 +264,10 @@
           const cell = document.createElement('div');
           cell.className = 'cell';
           const v = grid[r][c];
-          cell.textContent = v >= 0 ? FRUITS[v] : '';
+          if (v >= 0) {
+            cell.classList.add('fruit-t' + v);
+            cell.textContent = FRUITS[v];
+          }
           if (selected && selected.r === r && selected.c === c) cell.classList.add('selected');
           if (matchSet && matchSet.has(r * COLS + c)) cell.classList.add('matched');
           cell.addEventListener('click', () => onCellClick(r, c));

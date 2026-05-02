@@ -27,6 +27,9 @@
   --header-height: 64px;
   --stats-height: 72px;
   --control-height: 80px;
+  /* iPhone 瀏海／底部手勢區（配合 viewport-fit=cover） */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* 大字模式 */
@@ -86,11 +89,15 @@ button {
 .app-header {
   background: linear-gradient(135deg, var(--primary), #7B8EF0);
   color: white;
-  height: var(--header-height);
+  min-height: calc(var(--header-height) + var(--safe-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding-top: var(--safe-top);
+  padding-bottom: 0;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -133,7 +140,7 @@ button {
   padding: 0 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   position: sticky;
-  top: var(--header-height);
+  top: calc(var(--header-height) + var(--safe-top));
   z-index: 90;
 }
 
@@ -319,15 +326,16 @@ button {
 /* ===== 底部控制列 ===== */
 .control-bar {
   background: white;
-  height: var(--control-height);
+  min-height: calc(var(--control-height) + var(--safe-bottom));
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 0 16px;
+  padding: 0 16px var(--safe-bottom);
   box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
   position: sticky;
   bottom: 0;
+  box-sizing: border-box;
 }
 
 /* ===== 按鈕樣式 ===== */
