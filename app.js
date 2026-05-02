@@ -234,17 +234,8 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
 
-// ── LIFF init ──
-async function initLiff() {
-  if (typeof liff === 'undefined') return;
-  const liffId = window.GAME_CONFIG?.liffId;
-  if (!liffId) return;
-  try { await liff.init({ liffId }); } catch (e) {}
-}
-
 // ── Init ──
-(async function init() {
-  await initLiff();
+(function init() {
   const savedFont = localStorage.getItem('memory_fontsize') || 'large';
   document.body.classList.remove('font-large', 'font-xlarge');
   if (savedFont === 'large') document.body.classList.add('font-large');
