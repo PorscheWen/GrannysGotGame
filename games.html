@@ -34,6 +34,21 @@
     .app-title { color:#fff; font-size:1.3rem; font-weight:900; }
     .app-sub { color:rgba(255,255,255,.75); font-size:.85rem; margin-top:4px; }
 
+    .btn-reload-page {
+      display: block; width: 100%; max-width: 340px; margin: 14px auto 0;
+      padding: 11px 18px; font-size: 0.92rem; font-weight: 800;
+      color: #5B6EE8; background: #fff;
+      border: none; border-radius: 14px;
+      cursor: pointer; touch-action: manipulation;
+      -webkit-appearance: none; appearance: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    }
+    .btn-reload-page:active { transform: scale(0.98); opacity: 0.92; }
+    .reload-hint {
+      margin-top: 8px; font-size: 0.72rem; color: rgba(255,255,255,0.65);
+      line-height: 1.35; max-width: 340px; margin-left: auto; margin-right: auto;
+    }
+
     .content { padding:20px 16px max(32px, env(safe-area-inset-bottom)); max-width:480px; margin:0 auto; }
 
     .section-title {
@@ -101,6 +116,10 @@
   <header class="app-header">
     <div class="app-title">👵 連阿嬤都贏你</div>
     <div class="app-sub">Granny's Got Game｜選一個遊戲開始挑戰！</div>
+    <button type="button" class="btn-reload-page" id="btnReloadPage" aria-label="更新頁面取得最新版">
+      🔄 更新頁面（最新版）
+    </button>
+    <p class="reload-hint">用 LINE 內建瀏覽器若畫面不是最新，點此會清除快取並重新載入。</p>
   </header>
 
   <div class="content">
@@ -171,7 +190,11 @@
 
   <div class="footer">連阿嬤都贏你 │ Granny's Got Game</div>
 
+  <script src="reload-latest.js"></script>
   <script>
+    document.getElementById('btnReloadPage').addEventListener('click', function () {
+      if (window.reloadGameLatest) window.reloadGameLatest();
+    });
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(function () {});
     }

@@ -4,6 +4,7 @@
   "description": "連阿嬤都贏你 │ Granny's Got Game - 三代同堂翻牌配對 PWA + LINE 每日推播",
   "scripts": {
     "push": "node push/daily_push.js",
+    "push:update": "node push/update_push.js",
     "generate-richmenu": "node push/generate_richmenu.js",
     "setup-richmenu": "node push/setup_richmenu.js"
   },

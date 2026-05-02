@@ -1,10 +1,11 @@
 'use strict';
 
-const CACHE_NAME = 'memory-game-v8';
+const CACHE_NAME = 'memory-game-v11';
 const ASSETS = [
   './',
   './index.html',
   './games.html',
+  './reload-latest.js',
   './fruit.html',
   './2048.html',
   './sudoku.html',

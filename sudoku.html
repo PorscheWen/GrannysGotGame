@@ -35,7 +35,8 @@
       position: fixed; top: 64px; left: 0; right: 0; bottom: 80px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 16px; padding: 12px;
-      overflow: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Progress */
@@ -59,8 +60,8 @@
     .sudoku-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      border: 3px solid #3a4fcc;
-      border-radius: 0;
+      border: 1px solid #b8c0eb;
+      border-radius: 10px;
       overflow: hidden;
       gap: 0;
       width: min(calc(100vw - 24px), 380px);
@@ -71,15 +72,11 @@
       font-size: clamp(1.3rem, 6vw, 1.8rem);
       font-weight: 700;
       cursor: pointer;
-      border: 1px solid #c8cef5;
+      border: 1px solid #d8dcf0;
       background: #fff;
       position: relative;
       transition: background 0.12s;
     }
-    /* thick box borders — same weight as outer frame */
-    .cell[data-c="2"] { border-right: 3px solid #3a4fcc; }
-    .cell[data-r="1"] { border-bottom: 3px solid #3a4fcc; }
-    .cell[data-r="3"] { border-bottom: 3px solid #3a4fcc; }
 
     .cell.given { background: #eef0fd; color: #2230a0; cursor: default; }
     .cell.selected { background: #c8d0fc !important; }
@@ -87,13 +84,15 @@
     .cell.conflict { color: #e74c3c !important; }
     .cell.user { color: var(--primary); }
 
-    /* Numpad */
+    /* Numpad：2×3 網格，數字 1～6 重新排列（見 NUMPAD_ORDER） */
     .numpad {
-      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
       width: min(calc(100vw - 24px), 380px);
     }
     .num-btn {
-      width: 52px; height: 52px; border-radius: 12px;
+      width: 100%; min-height: 52px; border-radius: 12px;
       border: 2px solid #c8cef5; background: #fff;
       font-size: 1.4rem; font-weight: 700; color: var(--primary);
       cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -101,7 +100,42 @@
       transition: background 0.1s, transform 0.1s;
     }
     .num-btn:active { background: #e8ebff; transform: scale(0.92); }
-    .num-btn.del { color: #e74c3c; border-color: #f5c8c8; font-size: 1.1rem; }
+    .num-btn.del {
+      color: #e74c3c; border-color: #f5c8c8; font-size: 1.05rem;
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 48px;
+    }
+
+    /* 首次進入：遊戲講解 */
+    .help-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: none; align-items: center; justify-content: center; z-index: 400;
+      padding: 16px;
+    }
+    .help-overlay.show { display: flex; }
+    .help-panel {
+      background: #fff; border-radius: 20px; padding: 28px 22px;
+      width: min(360px, 100%); max-height: min(85vh, 520px); overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    }
+    .help-panel h2 { font-size: 1.25rem; color: var(--primary); margin-bottom: 14px; text-align: center; }
+    .help-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+    .help-step {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: 0.95rem; color: #444; line-height: 1.45;
+    }
+    .step-num {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px;
+      background: var(--primary); color: #fff; font-size: 0.85rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-got-it {
+      width: 100%; border: none; border-radius: 12px; padding: 14px;
+      background: var(--primary); color: #fff; font-size: 1.05rem; font-weight: 700;
+      cursor: pointer; box-shadow: 0 4px 14px rgba(91,110,232,0.35);
+    }
+    .btn-got-it:active { transform: scale(0.98); }
 
     /* Control bar */
     .control-bar {
@@ -173,6 +207,35 @@
   <button class="btn-next" id="btnNext">🔁 換一題</button>
 </div>
 
+<div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="help-panel">
+    <h2 id="helpTitle">🔢 簡易數獨怎麼玩？</h2>
+    <div class="help-steps">
+      <div class="help-step">
+        <span class="step-num">1</span>
+        <p>這是 <strong>6×6 數獨</strong>：每一<strong>橫列</strong>、每一<strong>直欄</strong>都要出現 <strong>1～6</strong> 各一次。</p>
+      </div>
+      <div class="help-step">
+        <span class="step-num">2</span>
+        <p>棋盤裡有塗灰的<strong>題目數字</strong>不能改；空白格才由你填入。</p>
+      </div>
+      <div class="help-step">
+        <span class="step-num">3</span>
+        <p>棋盤切成 <strong>六個長方形宮格</strong>（每宮 2 橫×3 直），每宮內也必須有 <strong>1～6</strong> 各一次。</p>
+      </div>
+      <div class="help-step">
+        <span class="step-num">4</span>
+        <p>先<strong>點選一格</strong>，再按下方<strong>數字鍵</strong>填入；若填錯與同行／同列／同宮重複，數字會變紅提示。</p>
+      </div>
+      <div class="help-step">
+        <span class="step-num">5</span>
+        <p>下方「⌫ 刪除」可清空該格。全部填對即過關！</p>
+      </div>
+    </div>
+    <button type="button" class="btn-got-it" id="btnGotIt">我知道了，開始解題</button>
+  </div>
+</div>
+
 <div class="win-overlay" id="winOverlay">
   <div class="win-panel">
     <div class="win-emoji">🎉</div>
@@ -188,6 +251,10 @@
 
 <script>
 'use strict';
+
+/** 下方數字鍵排列順序（仍為 1～6 各一顆，僅改順序與版面為 2×3） */
+const NUMPAD_ORDER = [4, 1, 6, 2, 5, 3];
+const HELP_SEEN_KEY = 'sudoku_help_seen_v1';
 
 const PUZZLES = [
   {
@@ -324,19 +391,25 @@ function renderGrid() {
 
 function renderNumpad() {
   numpadEl.innerHTML = '';
-  for (let n = 1; n <= 6; n++) {
+  for (const n of NUMPAD_ORDER) {
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'num-btn';
-    btn.textContent = n;
+    btn.textContent = String(n);
     btn.addEventListener('click', () => onNumClick(n));
     numpadEl.appendChild(btn);
   }
   const del = document.createElement('button');
+  del.type = 'button';
   del.className = 'num-btn del';
   del.textContent = '⌫ 刪除';
-  del.style.width = '116px';
   del.addEventListener('click', () => onNumClick(0));
   numpadEl.appendChild(del);
+}
+
+function maybeShowHelp() {
+  if (localStorage.getItem(HELP_SEEN_KEY)) return;
+  document.getElementById('helpOverlay').classList.add('show');
 }
 
 function onCellClick(r, c) {
@@ -409,7 +482,13 @@ document.getElementById('btnWinNext').addEventListener('click', () => {
 });
 document.getElementById('btnShareSudoku').addEventListener('click', shareSudoku);
 
+document.getElementById('btnGotIt').addEventListener('click', () => {
+  localStorage.setItem(HELP_SEEN_KEY, '1');
+  document.getElementById('helpOverlay').classList.remove('show');
+});
+
 loadPuzzle(0);
+maybeShowHelp();
 </script>
 </body>
 </html>

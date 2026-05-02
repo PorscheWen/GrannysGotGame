@@ -119,6 +119,9 @@
       aspect-ratio: 1;
       position: relative;
       cursor: pointer;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
     }
     .hole:active { transform: scale(0.9); }
 
@@ -322,6 +325,8 @@
       touch-action: manipulation;
       -webkit-user-select: none;
       user-select: none;
+      -webkit-appearance: none;
+      appearance: none;
     }
     .btn-got-it:active { transform: scale(0.97); }
   </style>
@@ -453,7 +458,7 @@
         <tr><td>8–9</td><td>30s</td><td>22 / 25</td><td>3 隻</td></tr>
         <tr><td>10 👑</td><td>35s</td><td>28</td><td>3 隻</td></tr>
       </table>
-      <button type="button" class="btn-got-it" id="btnGotIt" onclick="if(window.moleStartGame)window.moleStartGame();">我知道了，開始打！</button>
+      <button type="button" class="btn-got-it" id="btnGotIt">我知道了，開始打！</button>
     </div>
   </div>
 
@@ -495,13 +500,32 @@
       autoTimer: null,
     };
 
+    /* 手機網頁：僅靠 click 常無法即時觸發；touchend + click 去重 */
+    function bindTap(el, handler) {
+      if (!el) return;
+      let suppressClick = false;
+      el.addEventListener('touchend', function onEnd(e) {
+        e.preventDefault();
+        suppressClick = true;
+        handler(e);
+        setTimeout(function () { suppressClick = false; }, 450);
+      }, { passive: false });
+      el.addEventListener('click', function onClk(e) {
+        if (suppressClick) {
+          e.preventDefault();
+          return;
+        }
+        handler(e);
+      });
+    }
+
     /* ── Build 3×3 grid ── */
     const moleGrid = document.getElementById('moleGrid');
     const holes = Array.from({ length: 9 }, (_, i) => {
       const hole = document.createElement('div');
       hole.className = 'hole';
       hole.innerHTML = `<div class="mole">🐹</div><div class="hole-pit"></div><div class="hole-grass"></div>`;
-      hole.addEventListener('click', () => whack(i));
+      bindTap(hole, function () { whack(i); });
       moleGrid.appendChild(hole);
       return hole;
     });
@@ -756,11 +780,13 @@
       startLevel(1);
     });
 
-    /* 全域入口：給 onclick 用，避免少數環境 addEventListener 異常 */
     window.moleStartGame = function () {
       startLevel(1);
     };
-    /* 開始鍵只用 HTML onclick，避免與 addEventListener 重複觸發；亦相容較舊 WebView */
+
+    bindTap(document.getElementById('btnGotIt'), function () {
+      if (window.moleStartGame) window.moleStartGame();
+    });
   </script>
 </body>
 </html>
