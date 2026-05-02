@@ -9,15 +9,19 @@ jobs:
   push:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
+          cache: npm
 
-      - run: npm install --omit=dev
+      # daily_push 只需 dotenv；canvas 會觸發原生編譯，在 CI 無系統套件時易失敗，故略過 install scripts
+      - name: Install dependencies
+        run: npm ci --omit=dev --ignore-scripts
 
-      - run: node push/daily_push.js
+      - name: Run daily LINE push
+        run: node push/daily_push.js
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
