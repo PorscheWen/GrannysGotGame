@@ -1,7 +1,7 @@
 {
   "name": "連阿嬤都贏你",
   "short_name": "阿嬤贏你",
-  "description": "連阿嬤都贏你！三代同堂翻牌配對遊戲，動動腦，保持大腦活躍",
+  "description": "親子同樂、好友挑戰｜多款輕量小遊戲，動動腦、比高分，可裝到手機桌面。",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F4F6FF",
@@ -34,7 +34,7 @@
     {
       "name": "新遊戲（初級）",
       "short_name": "初級",
-      "description": "開始挑戰，連阿嬤都能贏你！",
+      "description": "親子同樂、好友挑戰｜從翻牌初級開始",
       "url": "./index.html?start=easy"
     }
   ]

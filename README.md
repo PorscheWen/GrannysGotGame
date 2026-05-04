@@ -1,6 +1,6 @@
 # 連阿嬤都贏你 · Granny's Got Game
 
-三代同堂都能玩的多合一小遊戲 PWA；前端為全靜態頁面，可安裝到手機桌面。
+**親子同樂、好友挑戰** — 多款輕量小遊戲合集 PWA：闔家同螢幕輪流玩，或把連結丟進 LINE 群和好友比團體榜。前端全靜態，可安裝到手機桌面。
 
 **線上遊玩：** [https://porschewen.github.io/GrannysGotGame/](https://porschewen.github.io/GrannysGotGame/) · 大廳：[games.html](https://porschewen.github.io/GrannysGotGame/games.html)
 
