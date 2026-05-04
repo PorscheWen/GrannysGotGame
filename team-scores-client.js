@@ -56,25 +56,67 @@
 
   window.__teamLeaderboard = window.__teamLeaderboard || null;
   window.__teamLbReady = false;
+  window.__teamLeaderboardScopeKey = '_global';
+  window.__teamLeaderboardScopeLabel = '🏆 團體最高分（全體 · LINE 前三名）';
+
+  function applyLeaderboardJson(j) {
+    var defaultLabel = '🏆 團體最高分（全體 · LINE 前三名）';
+    var groupLabel = '🏆 團體最高分（本 LINE 群組／聊天室 · LINE 前三名）';
+    if (!j) {
+      window.__teamLeaderboard = null;
+      window.__teamLeaderboardScopeKey = '_global';
+      window.__teamLeaderboardScopeLabel = defaultLabel;
+      return null;
+    }
+    if (j.version === 2 && j.scopes && typeof j.scopes === 'object') {
+      var gid = (window.__lineCached && window.__lineCached.groupId) || '';
+      if (gid && j.scopes[gid] && j.scopes[gid].games) {
+        window.__teamLeaderboard = j.scopes[gid].games;
+        window.__teamLeaderboardScopeKey = gid;
+        window.__teamLeaderboardScopeLabel = groupLabel;
+        return window.__teamLeaderboard;
+      }
+      var g = j.scopes._global && j.scopes._global.games;
+      window.__teamLeaderboard = g || null;
+      window.__teamLeaderboardScopeKey = '_global';
+      window.__teamLeaderboardScopeLabel = defaultLabel;
+      return window.__teamLeaderboard;
+    }
+    window.__teamLeaderboard = j.games || null;
+    window.__teamLeaderboardScopeKey = '_global';
+    window.__teamLeaderboardScopeLabel = defaultLabel;
+    return window.__teamLeaderboard;
+  }
 
   window.refreshTeamLeaderboardData = function refreshTeamLeaderboardData() {
     var url = getLeaderboardJsonUrl();
     if (!url) {
       window.__teamLeaderboard = null;
+      window.__teamLeaderboardScopeKey = '_global';
+      window.__teamLeaderboardScopeLabel = '🏆 團體最高分（全體 · LINE 前三名）';
       window.__teamLbReady = true;
       return Promise.resolve(null);
     }
-    return fetch(url + '?t=' + Date.now(), { mode: 'cors', cache: 'no-store' })
+    var prep =
+      typeof window.ensureLineProfile === 'function'
+        ? window.ensureLineProfile().catch(function () {
+            return null;
+          })
+        : Promise.resolve(null);
+    return prep
+      .then(function () {
+        return fetch(url + '?t=' + Date.now(), { mode: 'cors', cache: 'no-store' });
+      })
       .then(function (r) {
         return r.json();
       })
       .then(function (j) {
-        if (j && j.games) window.__teamLeaderboard = j.games;
-        else window.__teamLeaderboard = null;
-        return window.__teamLeaderboard;
+        return applyLeaderboardJson(j);
       })
       .catch(function () {
         window.__teamLeaderboard = null;
+        window.__teamLeaderboardScopeKey = '_global';
+        window.__teamLeaderboardScopeLabel = '🏆 團體最高分（全體 · LINE 前三名）';
         return null;
       })
       .finally(function () {
@@ -121,7 +163,17 @@
           window.__lineCached = null;
           return null;
         }
-        window.__lineCached = { userId: p.userId, displayName: p.displayName || '' };
+        var ctx = typeof window.liff.getContext === 'function' ? window.liff.getContext() : null;
+        var gid = '';
+        if (ctx) {
+          if (ctx.type === 'group' && ctx.groupId) gid = String(ctx.groupId).trim();
+          else if (ctx.type === 'room' && ctx.roomId) gid = String(ctx.roomId).trim();
+        }
+        window.__lineCached = {
+          userId: p.userId,
+          displayName: p.displayName || '',
+          groupId: gid,
+        };
         return window.__lineCached;
       })
       .catch(function () {
@@ -168,6 +220,10 @@
     /* 上傳仍走 Node（server.js 轉發 GitHub dispatch）；瀏覽器無法直連 api.github.com */
 
     function postScore(userId, displayName) {
+      var gid =
+        window.__lineCached && window.__lineCached.groupId
+          ? String(window.__lineCached.groupId).trim()
+          : '';
       var body = {
         userId: userId,
         displayName: displayName || '',
@@ -176,6 +232,7 @@
         extra: opts.extra || {},
         lowerIsBetter: !!opts.lowerIsBetter,
       };
+      if (gid) body.groupId = gid;
       return fetch(base + '/api/leaderboard/submit', {
         method: 'POST',
         mode: 'cors',
@@ -356,7 +413,11 @@
   };
 
   window.buildTeamLobbyShareText = function buildTeamLobbyShareText() {
-    var lines = ['👵 連阿嬤都贏你｜團體最高分（各遊戲前三名 · LINE）', ''];
+    var scopeNote =
+      window.__teamLeaderboardScopeKey && window.__teamLeaderboardScopeKey !== '_global'
+        ? '〔本群組／聊天室榜〕'
+        : '〔全體榜〕';
+    var lines = ['👵 連阿嬤都贏你｜團體最高分（各遊戲前三名 · LINE）' + scopeNote, ''];
 
     function pushLineFriendLinks() {
       if (typeof window.getLineShareLobbyUrls !== 'function') return;

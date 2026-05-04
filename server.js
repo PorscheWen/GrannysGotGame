@@ -45,8 +45,16 @@ app.post('/api/score', (req, res) => {
  * 團體榜提交：轉發至 GitHub repository_dispatch → Actions 合併 leaderboard.json
  * 榜單資料存於 repo，非此伺服器檔案。
  */
+/** LINE 群組（C…）或多人聊天室（R…）作為團體榜分區；無效則寫入全體 _global */
+function sanitizeLeaderboardScopeId(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const s = raw.trim();
+  if (!/^[CR][0-9a-fA-Z_-]{8,64}$/.test(s)) return '';
+  return s;
+}
+
 app.post('/api/leaderboard/submit', (req, res) => {
-  const { userId, displayName, game, value, extra } = req.body || {};
+  const { userId, displayName, game, value, extra, groupId } = req.body || {};
   const num = Number(value);
   if (!userId || !game || Number.isNaN(num)) {
     return res.status(400).json({ ok: false, error: 'bad_request' });
@@ -54,6 +62,8 @@ app.post('/api/leaderboard/submit', (req, res) => {
   if (!GH_OWNER || !GH_REPO || !GH_DISPATCH_TOKEN) {
     return res.status(503).json({ ok: false, error: 'github_dispatch_not_configured' });
   }
+
+  const scopeId = sanitizeLeaderboardScopeId(groupId);
 
   const payload = JSON.stringify({
     event_type: 'leaderboard_submit',
@@ -63,6 +73,7 @@ app.post('/api/leaderboard/submit', (req, res) => {
       game,
       value: num,
       extra: extra && typeof extra === 'object' ? extra : {},
+      ...(scopeId ? { groupId: scopeId } : {}),
     },
   });
 

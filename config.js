@@ -7,10 +7,11 @@ window.GAME_CONFIG = {
    * 成績上傳用（勿結尾斜線）。因瀏覽器無法直連 GitHub API，須由 Node（server.js）轉發 repository_dispatch。
    * 空白則僅顯示榜單、無法從遊戲上傳。本機有跑 server.js 時可設：http://127.0.0.1:3000
    * 在 LINE 內若已設定 liffId 會以上傳 LINE 身份為主；一般瀏覽器則用本地匿名 ID 仍可上傳。
+   * 從 LINE「群組」或多人「聊天室」內開啟 LIFF 時，成績會寫入該群／室的獨立團體榜（leaderboard.json scopes）；一對一或外部瀏覽器則為全體榜 _global。
    */
   scoreApiUrl: '',
-  /** LINE Developers → LIFF → 你的 LIFF App ID（在 LINE 內開啟遊戲時用于取得 User ID） */
-  liffId: '',
+  /** LINE Developers → LIFF → App ID（Elder_Training / GrannysGotGame） */
+  liffId: '2009935174-67Y6JKOs',
 };
 
 /** 正規化基底網址（結尾保留單一 /） */

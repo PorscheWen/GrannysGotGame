@@ -61,14 +61,48 @@ function formatTime(sec) {
   return `${m}:${s}`;
 }
 
+/** 舊版或手改 localStorage 可能只有 value、或缺 flips，避免比較壞掉而永遠無法更新 */
+function normalizeMemoryBestRow(row) {
+  if (!row || typeof row !== 'object') return null;
+  const sec = typeof row.seconds === 'number' && Number.isFinite(row.seconds)
+    ? row.seconds
+    : (typeof row.value === 'number' && Number.isFinite(row.value) ? row.value : NaN);
+  let fp = row.flips;
+  fp = typeof fp === 'number' && Number.isFinite(fp) ? fp : parseInt(fp, 10);
+  if (!Number.isFinite(sec)) return null;
+  if (!Number.isFinite(fp) || fp < 0) fp = 0;
+  return { seconds: sec, flips: fp };
+}
+
 function loadBestScores() {
-  try { return JSON.parse(localStorage.getItem('memory_best') || '{}'); }
+  let raw;
+  try { raw = JSON.parse(localStorage.getItem('memory_best') || '{}'); }
   catch { return {}; }
+  if (!raw || typeof raw !== 'object') return {};
+  const diffs = ['easy', 'medium', 'hard'];
+  let changed = false;
+  for (const d of diffs) {
+    if (raw[d] == null) continue;
+    const n = normalizeMemoryBestRow(raw[d]);
+    if (n) {
+      if (raw[d].seconds !== n.seconds || raw[d].flips !== n.flips) {
+        raw[d] = n;
+        changed = true;
+      }
+    } else {
+      delete raw[d];
+      changed = true;
+    }
+  }
+  if (changed) {
+    try { localStorage.setItem('memory_best', JSON.stringify(raw)); } catch (_) {}
+  }
+  return raw;
 }
 
 function saveBestScore(difficulty, seconds, flips) {
   const scores = loadBestScores();
-  const prev = scores[difficulty];
+  const prev = normalizeMemoryBestRow(scores[difficulty]);
   let isNew = false;
   if (!prev || seconds < prev.seconds || (seconds === prev.seconds && flips < prev.flips)) {
     scores[difficulty] = { seconds, flips };
